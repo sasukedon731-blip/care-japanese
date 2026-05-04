@@ -1,0 +1,36 @@
+介護系＋日本語検定版への整理メモ
+
+残した教材データ:
+- japanese-n4
+- japanese-n3
+- japanese-n2
+- care-terms
+- care-listening
+- care-conversation
+- care-worker-exam
+
+削除した教材データ:
+- 建設系
+- 製造系
+- 外国免許切替
+- 道路標識
+- 方言系
+- スピーキング練習
+- 現場用語系
+
+主な変更ファイル:
+- app/data/quizzes/index.ts
+- app/data/quizCatalog.ts
+- app/page.tsx
+- app/(public)/page.tsx
+- app/(auth)/select-industry/page.tsx
+- app/(auth)/select-quizzes/page.tsx
+- app/(auth)/select-mode/page.tsx
+- app/(auth)/mypage/page.tsx
+- app/(auth)/plans/page.tsx
+- app/api/stripe/checkout/route.ts
+- app/api/stripe/webhook/route.ts
+
+注意:
+- .env.local は同梱していません。ローカルで元の環境変数を入れてください。
+- この環境には node_modules が無いため、npm run build は未実行です。ローカルで npm install → npm run build を実行してください。

@@ -1,0 +1,24 @@
+Care/Japanese merged app
+
+Base: care-japanese-app-clean.zip
+Added from jlpt-pass-n5-n4 ZIP:
+- app/home
+- app/for-business
+- app/lp
+- app/(auth)/company
+- app/(public)/company
+- company/admin redirect pages
+- CompanyHeader, BilingualText, AdvancedApp* components
+- newer AppHeader and appMenu, adjusted to route Study -> /select-industry
+
+Kept data only from care/japanese clean app:
+- japanese-n4
+- japanese-n3
+- japanese-n2
+- care-terms
+- care-listening
+- care-conversation
+- care-worker-exam
+
+.env.local is intentionally removed.
+Build was not executed in this environment because dependencies/node_modules are not included. Run npm install then npm run build locally.
