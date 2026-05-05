@@ -730,3 +730,71 @@ body{background:var(--bg);color:var(--body)}
   .ui-action-three{grid-template-columns:1fr;}
   .ui-btn{min-height:46px;}
 }
+/* =========================
+   Common UI Tokens
+========================= */
+
+.text-title {
+  @apply text-slate-900 font-bold;
+}
+
+.text-body {
+  @apply text-slate-700;
+}
+
+.text-sub {
+  @apply text-slate-500;
+}
+
+.card {
+  @apply bg-white border border-slate-200 rounded-[28px] shadow-sm;
+}
+
+.card-soft {
+  @apply bg-slate-50 border border-slate-200 rounded-[28px];
+}
+
+.btn {
+  @apply inline-flex items-center justify-center rounded-2xl px-6 py-4 text-base font-bold transition shadow-sm;
+}
+
+.btn-primary {
+  @apply btn bg-blue-600 text-white hover:bg-blue-700;
+}
+
+.btn-dark {
+  @apply btn bg-slate-900 text-white hover:bg-slate-800;
+}
+
+.btn-secondary {
+  @apply btn bg-white text-slate-900 border border-slate-300 hover:bg-slate-50;
+}
+
+.btn-soft {
+  @apply btn bg-slate-100 text-slate-800 hover:bg-slate-200;
+}
+
+.btn-green {
+  @apply btn bg-emerald-600 text-white hover:bg-emerald-700;
+}
+
+.btn-full {
+  @apply w-full;
+}
+
+/* ボタン内の文字色が親要素に引っ張られる事故を防ぐ */
+.btn-primary,
+.btn-primary *,
+.btn-dark,
+.btn-dark *,
+.btn-green,
+.btn-green * {
+  color: #ffffff !important;
+}
+
+.btn-secondary,
+.btn-secondary *,
+.btn-soft,
+.btn-soft * {
+  color: #0f172a !important;
+}
