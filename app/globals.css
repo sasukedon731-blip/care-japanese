@@ -759,23 +759,23 @@ body{background:var(--bg);color:var(--body)}
 }
 
 .btn-primary {
-  @apply btn bg-blue-600 text-white hover:bg-blue-700;
+  @apply inline-flex items-center justify-center rounded-2xl px-6 py-4 text-base font-bold transition shadow-md bg-blue-600 text-white hover:bg-blue-700;
 }
 
 .btn-dark {
-  @apply btn bg-slate-900 text-white hover:bg-slate-800;
+  @apply inline-flex items-center justify-center rounded-2xl px-6 py-4 text-base font-bold transition shadow-md bg-slate-900 text-white hover:bg-slate-800;
 }
 
 .btn-secondary {
-  @apply btn bg-white text-slate-900 border border-slate-300 hover:bg-slate-50;
+  @apply inline-flex items-center justify-center rounded-2xl px-6 py-4 text-base font-bold transition shadow-sm bg-white text-slate-900 border border-slate-300 hover:bg-slate-50;
 }
 
 .btn-soft {
-  @apply btn bg-slate-100 text-slate-800 hover:bg-slate-200;
+  @apply inline-flex items-center justify-center rounded-2xl px-6 py-4 text-base font-bold transition shadow-sm bg-slate-100 text-slate-800 hover:bg-slate-200;
 }
 
 .btn-green {
-  @apply btn bg-emerald-600 text-white hover:bg-emerald-700;
+  @apply inline-flex items-center justify-center rounded-2xl px-6 py-4 text-base font-bold transition shadow-md bg-emerald-600 text-white hover:bg-emerald-700;
 }
 
 .btn-full {
