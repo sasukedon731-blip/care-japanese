@@ -73,6 +73,8 @@ export default function RegisterPage() {
         password
       )
 
+      await userCredential.user.getIdToken(true)
+
       await updateProfile(userCredential.user, { displayName: trimmedName })
 
       const uid = userCredential.user.uid
