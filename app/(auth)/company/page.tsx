@@ -17,27 +17,18 @@ import { auth, db } from "@/app/lib/firebase"
 import CompanyHeader from "@/app/components/CompanyHeader"
 import LegalFooter from "@/app/components/LegalFooter"
 
-type BillingLike = {
-  status?: string
-  currentPeriodEnd?: any
-  accountType?: string
-}
-
 type CompanyDoc = {
   name?: string
-  inviteCode?: string
-  inviteEnabled?: boolean
-  currentPeriodEnd?: any
-  billing?: BillingLike
+  status?: string
 }
 
 type UserDoc = {
   displayName?: string
   email?: string
-  role?: "admin" | "company_admin" | "user"
-  companyId?: string
-  companyName?: string
-  billing?: BillingLike
+  role?: "admin" | "company_admin" | "learner"
+  accountType?: "personal" | "company"
+  companyCode?: string | null
+  companyName?: string | null
   createdAt?: any
   updatedAt?: any
 }
@@ -47,8 +38,6 @@ type ResultDoc = {
   correctCount?: number
   totalQuestions?: number
   accuracy?: number
-  quizType?: string
-  mode?: string
   createdAt?: any
   updatedAt?: any
 }
@@ -66,13 +55,25 @@ type LearnerRow = {
   displayName: string
   email: string
   role: string
-  companyId: string
+  companyCode: string
   companyName: string
   studyCount: number
   averageAccuracy: number | null
   lastStudiedAt: Date | null
   badgeCount: number
   status: "未学習" | "学習中" | "7日以上未学習"
+}
+
+function parseDateValue(value: any): Date | null {
+  if (!value) return null
+  try {
+    if (typeof value?.toDate === "function") return value.toDate()
+    if (value instanceof Date) return value
+    const d = new Date(value)
+    return Number.isNaN(d.getTime()) ? null : d
+  } catch {
+    return null
+  }
 }
 
 function formatDate(value: Date | null) {
@@ -103,39 +104,9 @@ function getStatus(
 }
 
 function badgeClass(status: LearnerRow["status"]) {
-  if (status === "未学習") {
-    return "bg-slate-100 text-slate-700 border-slate-200"
-  }
-  if (status === "7日以上未学習") {
-    return "bg-amber-50 text-amber-700 border-amber-200"
-  }
+  if (status === "未学習") return "bg-slate-100 text-slate-700 border-slate-200"
+  if (status === "7日以上未学習") return "bg-amber-50 text-amber-700 border-amber-200"
   return "bg-emerald-50 text-emerald-700 border-emerald-200"
-}
-
-function parseDateValue(value: any): Date | null {
-  if (!value) return null
-
-  try {
-    if (typeof value?.toDate === "function") return value.toDate()
-    if (value instanceof Date) return value
-    const d = new Date(value)
-    return Number.isNaN(d.getTime()) ? null : d
-  } catch {
-    return null
-  }
-}
-
-function getRemainingDays(target: Date | null): number | null {
-  if (!target) return null
-  const diff = target.getTime() - Date.now()
-  return Math.ceil(diff / (1000 * 60 * 60 * 24))
-}
-
-function formatRemainingLabel(days: number | null) {
-  if (days == null) return "未設定"
-  if (days < 0) return "期限切れ"
-  if (days === 0) return "本日まで"
-  return `残り${days}日`
 }
 
 export default function CompanyDashboardPage() {
@@ -146,10 +117,8 @@ export default function CompanyDashboardPage() {
   const [copied, setCopied] = useState(false)
 
   const [viewerRole, setViewerRole] = useState("")
-  const [viewerCompanyId, setViewerCompanyId] = useState("")
+  const [viewerCompanyCode, setViewerCompanyCode] = useState("")
   const [viewerCompanyName, setViewerCompanyName] = useState("")
-  const [viewerInviteCode, setViewerInviteCode] = useState("")
-  const [companyPeriodEnd, setCompanyPeriodEnd] = useState<Date | null>(null)
 
   const [rows, setRows] = useState<LearnerRow[]>([])
 
@@ -183,11 +152,11 @@ export default function CompanyDashboardPage() {
 
         const viewer = viewerSnap.data() as UserDoc
         const role = viewer.role ?? ""
-        const companyId = viewer.companyId ?? ""
-        const companyName = viewer.companyName ?? ""
+        const companyCode = viewer.companyCode ?? ""
+        let companyName = viewer.companyName ?? ""
 
         setViewerRole(role)
-        setViewerCompanyId(companyId)
+        setViewerCompanyCode(companyCode)
         setViewerCompanyName(companyName)
 
         if (role !== "company_admin" && role !== "admin") {
@@ -195,53 +164,37 @@ export default function CompanyDashboardPage() {
           return
         }
 
-        if (role === "company_admin" && !companyId) {
+        if (role === "company_admin" && !companyCode) {
           setError("企業情報が設定されていません。")
           setLoading(false)
           return
         }
 
-        if (companyId) {
+        if (companyCode) {
           try {
-            const companySnap = await getDoc(doc(db, "companies", companyId))
-
+            const companySnap = await getDoc(doc(db, "companies", companyCode))
             if (companySnap.exists()) {
               const company = companySnap.data() as CompanyDoc
-
-              setViewerInviteCode(company.inviteCode ?? "")
-
-              const companyEnd =
-                parseDateValue(company.billing?.currentPeriodEnd) ??
-                parseDateValue(company.currentPeriodEnd) ??
-                parseDateValue(viewer.billing?.currentPeriodEnd)
-
-              setCompanyPeriodEnd(companyEnd)
-            } else {
-              setViewerInviteCode("")
-              setCompanyPeriodEnd(parseDateValue(viewer.billing?.currentPeriodEnd))
+              companyName = company.name ?? companyName
+              setViewerCompanyName(companyName)
             }
           } catch (e) {
             console.error("company fetch error:", e)
-            setViewerInviteCode("")
-            setCompanyPeriodEnd(parseDateValue(viewer.billing?.currentPeriodEnd))
           }
-        } else {
-          setViewerInviteCode("")
-          setCompanyPeriodEnd(parseDateValue(viewer.billing?.currentPeriodEnd))
         }
 
         const usersRef = collection(db, "users")
         const usersSnap =
           role === "admin"
             ? await getDocs(usersRef)
-            : await getDocs(query(usersRef, where("companyId", "==", companyId)))
+            : await getDocs(query(usersRef, where("companyCode", "==", companyCode)))
 
         const userDocs = usersSnap.docs
           .map((d) => ({
             uid: d.id,
             ...(d.data() as UserDoc),
           }))
-          .filter((u) => u.role === "user")
+          .filter((u) => u.role === "learner")
 
         const builtRows = await Promise.all(
           userDocs.map(async (u) => {
@@ -276,12 +229,8 @@ export default function CompanyDashboardPage() {
                   accuracyCount += 1
                 }
 
-                if (typeof r.correctCount === "number") {
-                  totalCorrect += r.correctCount
-                }
-                if (typeof r.totalQuestions === "number") {
-                  totalQuestions += r.totalQuestions
-                }
+                if (typeof r.correctCount === "number") totalCorrect += r.correctCount
+                if (typeof r.totalQuestions === "number") totalQuestions += r.totalQuestions
 
                 const d = parseDateValue(r.createdAt ?? r.updatedAt)
                 if (d && d.getTime() > latestMs) latestMs = d.getTime()
@@ -294,9 +243,7 @@ export default function CompanyDashboardPage() {
                     ? (totalCorrect / totalQuestions) * 100
                     : null
 
-              if (latestMs > 0) {
-                lastStudiedAt = new Date(latestMs)
-              }
+              if (latestMs > 0) lastStudiedAt = new Date(latestMs)
             } catch (e) {
               console.error("results read error:", u.uid, e)
             }
@@ -304,10 +251,7 @@ export default function CompanyDashboardPage() {
             try {
               const achievementsRef = collection(db, "users", u.uid, "achievements")
               const achievementsSnap = await getDocs(achievementsRef)
-              const achievements = achievementsSnap.docs.map(
-                (d) => d.data() as AchievementDoc
-              )
-              badgeCount = achievements.length
+              badgeCount = achievementsSnap.docs.length
             } catch (e) {
               console.error("achievements read error:", u.uid, e)
             }
@@ -318,8 +262,8 @@ export default function CompanyDashboardPage() {
               uid: u.uid,
               displayName: u.displayName || "名称未設定",
               email: u.email || "—",
-              role: u.role || "user",
-              companyId: u.companyId || "",
+              role: u.role || "learner",
+              companyCode: u.companyCode || "",
               companyName: u.companyName || "",
               studyCount,
               averageAccuracy,
@@ -342,11 +286,11 @@ export default function CompanyDashboardPage() {
     return () => unsub()
   }, [router])
 
-  async function handleCopyInviteCode() {
-    if (!viewerInviteCode) return
+  async function handleCopyCompanyCode() {
+    if (!viewerCompanyCode) return
 
     try {
-      await navigator.clipboard.writeText(viewerInviteCode)
+      await navigator.clipboard.writeText(viewerCompanyCode)
       setCopied(true)
       window.setTimeout(() => setCopied(false), 1800)
     } catch (e) {
@@ -369,19 +313,9 @@ export default function CompanyDashboardPage() {
     })
 
     data = [...data].sort((a, b) => {
-      if (sortBy === "name") {
-        return a.displayName.localeCompare(b.displayName, "ja")
-      }
-
-      if (sortBy === "studyCount") {
-        return b.studyCount - a.studyCount
-      }
-
-      if (sortBy === "accuracy") {
-        const av = a.averageAccuracy ?? -1
-        const bv = b.averageAccuracy ?? -1
-        return bv - av
-      }
+      if (sortBy === "name") return a.displayName.localeCompare(b.displayName, "ja")
+      if (sortBy === "studyCount") return b.studyCount - a.studyCount
+      if (sortBy === "accuracy") return (b.averageAccuracy ?? -1) - (a.averageAccuracy ?? -1)
 
       const at = a.lastStudiedAt ? a.lastStudiedAt.getTime() : 0
       const bt = b.lastStudiedAt ? b.lastStudiedAt.getTime() : 0
@@ -436,14 +370,9 @@ export default function CompanyDashboardPage() {
   const displayCompanyName =
     viewerRole === "admin"
       ? "全企業表示"
-      : viewerCompanyName || viewerCompanyId || "企業管理画面"
+      : viewerCompanyName || viewerCompanyCode || "企業管理画面"
 
-  const headerCompanyName =
-    displayCompanyName || viewerCompanyName || viewerCompanyId || "企業管理画面"
-
-  const remainingDays = useMemo(() => {
-    return getRemainingDays(companyPeriodEnd)
-  }, [companyPeriodEnd])
+  const headerCompanyName = displayCompanyName || "企業管理画面"
 
   if (loading) {
     return (
@@ -468,17 +397,11 @@ export default function CompanyDashboardPage() {
             <p className="text-sm font-medium text-red-600">{error}</p>
 
             <div className="mt-6 flex flex-wrap gap-3">
-              <Link
-                href="/company/login"
-                className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
-              >
+              <Link href="/company/login" className="btn-dark min-h-[48px]">
                 企業ログインへ戻る
               </Link>
 
-              <Link
-                href="/home"
-                className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-              >
+              <Link href="/home" className="btn-secondary min-h-[48px]">
                 学習TOPへ
               </Link>
             </div>
@@ -514,18 +437,17 @@ export default function CompanyDashboardPage() {
                   <InlineBadge label="学習者数" value={`${summary.total}名`} />
                   <InlineBadge label="学習中" value={`${summary.studying}名`} />
                   <InlineBadge label="要フォロー候補" value={`${followTargetCount}名`} />
-                  <InlineBadge label="契約" value={formatRemainingLabel(remainingDays)} />
+                  <InlineBadge label="企業コード" value={viewerCompanyCode || "—"} />
                 </div>
               </div>
 
               <div className="w-full max-w-[400px] rounded-[24px] border border-blue-100 bg-slate-50 p-4 md:p-5 lg:w-[400px]">
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-                    COMPANY
-                  </p>
-                  <div className="mt-2 text-2xl font-extrabold leading-tight text-slate-900 md:text-[30px] break-words">
-                    {displayCompanyName}
-                  </div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+                  COMPANY
+                </p>
+
+                <div className="mt-2 break-words text-2xl font-extrabold leading-tight text-slate-900 md:text-[30px]">
+                  {displayCompanyName}
                 </div>
 
                 <div className="mt-4 grid gap-3 border-t border-slate-200 pt-4">
@@ -534,47 +456,26 @@ export default function CompanyDashboardPage() {
                       <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
                         COMPANY CODE
                       </p>
+
                       <div className="mt-2 break-all text-3xl font-black tracking-[0.08em] text-blue-600">
-                        {viewerRole === "admin"
-                          ? "管理者表示"
-                          : viewerInviteCode || "未設定"}
+                        {viewerRole === "admin" ? "管理者表示" : viewerCompanyCode || "未設定"}
                       </div>
                     </div>
 
                     <button
                       type="button"
-                      onClick={handleCopyInviteCode}
-                      disabled={!viewerInviteCode || viewerRole === "admin"}
+                      onClick={handleCopyCompanyCode}
+                      disabled={!viewerCompanyCode || viewerRole === "admin"}
                       className="inline-flex h-11 shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {copied ? "コピー済み" : "コードをコピー"}
                     </button>
                   </div>
 
-                  <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
-                    <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-                      CONTRACT
-                    </div>
-                    <div className="mt-2 flex items-center justify-between gap-3">
-                      <div className="text-lg font-extrabold text-slate-900">
-                        {viewerRole === "admin"
-                          ? "管理者表示"
-                          : formatRemainingLabel(remainingDays)}
-                      </div>
-                      <div className="text-right text-xs text-slate-500">
-                        {viewerRole === "admin"
-                          ? "企業単位で確認してください"
-                          : companyPeriodEnd
-                            ? `期限 ${formatDate(companyPeriodEnd)}`
-                            : "期限未設定"}
-                      </div>
-                    </div>
-                  </div>
-
                   <p className="text-xs leading-6 text-slate-500 md:text-sm">
                     {viewerRole === "admin"
                       ? "admin は全企業の学習者一覧を確認できます"
-                      : "学習者登録時にこのコードを入力してもらってください"}
+                      : "学習者登録時にこの企業コードを入力してもらってください"}
                   </p>
                 </div>
               </div>
@@ -675,26 +576,20 @@ export default function CompanyDashboardPage() {
                       <th className="px-5 py-4 font-semibold">詳細</th>
                     </tr>
                   </thead>
+
                   <tbody>
                     {filteredRows.map((row) => (
-                      <tr
-                        key={row.uid}
-                        className="border-b border-slate-100 last:border-b-0"
-                      >
+                      <tr key={row.uid} className="border-b border-slate-100 last:border-b-0">
                         <td className="px-5 py-4">
                           <div className="font-semibold text-slate-900">
                             {row.displayName}
                           </div>
-                          <div className="mt-1 text-xs text-slate-500">
-                            {row.email}
-                          </div>
+                          <div className="mt-1 text-xs text-slate-500">{row.email}</div>
                         </td>
 
                         <td className="px-5 py-4">
                           <span
-                            className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${badgeClass(
-                              row.status
-                            )}`}
+                            className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${badgeClass(row.status)}`}
                           >
                             {row.status}
                           </span>
@@ -719,7 +614,7 @@ export default function CompanyDashboardPage() {
                         <td className="px-5 py-4">
                           <Link
                             href={`/company/${row.uid}`}
-                            className="inline-flex rounded-xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white hover:opacity-90"
+                            className="btn-dark min-h-[40px] px-3 py-2 text-xs"
                           >
                             詳細を見る
                           </Link>
@@ -747,9 +642,7 @@ export default function CompanyDashboardPage() {
                       </div>
 
                       <span
-                        className={`inline-flex shrink-0 rounded-full border px-3 py-1 text-[11px] font-semibold ${badgeClass(
-                          row.status
-                        )}`}
+                        className={`inline-flex shrink-0 rounded-full border px-3 py-1 text-[11px] font-semibold ${badgeClass(row.status)}`}
                       >
                         {row.status}
                       </span>
@@ -762,15 +655,12 @@ export default function CompanyDashboardPage() {
                         value={formatPercent(row.averageAccuracy)}
                       />
                       <MobileStat label="バッジ" value={`${row.badgeCount}`} />
-                      <MobileStat
-                        label="最終学習日"
-                        value={formatDate(row.lastStudiedAt)}
-                      />
+                      <MobileStat label="最終学習日" value={formatDate(row.lastStudiedAt)} />
                     </div>
 
                     <Link
                       href={`/company/${row.uid}`}
-                      className="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-slate-900 px-3 py-3 text-sm font-semibold text-white"
+                      className="btn-dark mt-4 min-h-[48px] w-full"
                     >
                       詳細を見る
                     </Link>
@@ -782,21 +672,9 @@ export default function CompanyDashboardPage() {
         </section>
 
         <section className="mt-6 grid gap-4 md:grid-cols-3">
-          <SummaryBox
-            label="未学習"
-            value={`${summary.notStarted}`}
-            note="初回学習がまだの学習者です"
-          />
-          <SummaryBox
-            label="要フォロー候補"
-            value={`${followTargetCount}`}
-            note="長期未学習または正答率60%未満"
-          />
-          <SummaryBox
-            label="好調"
-            value={`${goodConditionCount}`}
-            note="継続中かつ高い正答率の学習者"
-          />
+          <SummaryBox label="未学習" value={`${summary.notStarted}`} note="初回学習がまだの学習者です" />
+          <SummaryBox label="要フォロー候補" value={`${followTargetCount}`} note="長期未学習または正答率60%未満" />
+          <SummaryBox label="好調" value={`${goodConditionCount}`} note="継続中かつ高い正答率の学習者" />
         </section>
       </main>
 
