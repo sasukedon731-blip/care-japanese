@@ -16,6 +16,3 @@ const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig)
 export const auth = getAuth(app)
 export const db = getFirestore(app)
 export { app }
-
-console.log("Firebase projectId:", firebaseConfig.projectId)
-console.log("Firebase authDomain:", firebaseConfig.authDomain)

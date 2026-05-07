@@ -4,7 +4,7 @@
 import { db } from "@/app/lib/firebase"
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore"
 
-export type UserRole = "admin" | "user"
+export type UserRole = "admin" | "company_admin" | "learner"
 
 type EnsureParams = {
   uid: string
@@ -12,12 +12,6 @@ type EnsureParams = {
   displayName?: string | null
 }
 
-/**
- * ✅ users/{uid} を必ず「実在するドキュメント」として作る/補正する
- * - 初回：role/user を含めて作成（空ドキュメント問題を根絶）
- * - 既存：roleは触らず、email/displayName/updatedAt を安全に merge
- * - ⚠️ 既存ユーザーの selectedQuizTypes を絶対に上書きしない
- */
 export async function ensureUserProfile(params: EnsureParams) {
   const { uid } = params
   const email = params.email ?? null
@@ -31,12 +25,12 @@ export async function ensureUserProfile(params: EnsureParams) {
       uid,
       email,
       displayName,
-      role: "user" as UserRole,
-
-      // 初回だけ初期値
+      accountType: "personal",
+      role: "learner" as UserRole,
+      companyCode: null,
+      companyName: null,
       quizLimit: 3,
       selectedQuizTypes: [],
-
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     })
@@ -44,10 +38,6 @@ export async function ensureUserProfile(params: EnsureParams) {
   }
 
   const data = snap.data() as any
-
-  // ✅ 既存：roleは変更しない（事故防止）
-  // ✅ email/displayName は未設定なら補完してOK
-  // ✅ quizLimit/selectedQuizTypes は「無いときだけ」補完（上書き禁止）
   const patch: Record<string, any> = {
     uid,
     updatedAt: serverTimestamp(),
@@ -55,20 +45,21 @@ export async function ensureUserProfile(params: EnsureParams) {
 
   if (email && !data?.email) patch.email = email
   if (displayName && !data?.displayName) patch.displayName = displayName
-
+  if (!data?.accountType) patch.accountType = "personal"
+  if (!data?.role) patch.role = "learner"
+  if (!("companyCode" in data)) patch.companyCode = null
+  if (!("companyName" in data)) patch.companyName = null
   if (typeof data?.quizLimit !== "number") patch.quizLimit = 3
   if (!Array.isArray(data?.selectedQuizTypes)) patch.selectedQuizTypes = []
 
   await setDoc(ref, patch, { merge: true })
 }
 
-/**
- * ✅ 自分のrole取得（存在しない場合は user 扱い）
- */
 export async function getUserRole(uid: string): Promise<UserRole> {
   const ref = doc(db, "users", uid)
   const snap = await getDoc(ref)
-  if (!snap.exists()) return "user"
+  if (!snap.exists()) return "learner"
   const role = (snap.data() as any)?.role
-  return role === "admin" ? "admin" : "user"
+  if (role === "admin" || role === "company_admin") return role
+  return "learner"
 }

@@ -103,6 +103,20 @@ function getStatus(
   return "学習中"
 }
 
+function sleep(ms: number) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms))
+}
+
+async function getUserDocWithRetry(uid: string, maxRetry = 5) {
+  for (let i = 0; i < maxRetry; i += 1) {
+    const snap = await getDoc(doc(db, "users", uid))
+    if (snap.exists()) return snap
+    await sleep(250 * (i + 1))
+  }
+
+  return getDoc(doc(db, "users", uid))
+}
+
 function badgeClass(status: LearnerRow["status"]) {
   if (status === "未学習") return "bg-slate-100 text-slate-700 border-slate-200"
   if (status === "7日以上未学習") return "bg-amber-50 text-amber-700 border-amber-200"
@@ -141,8 +155,9 @@ export default function CompanyDashboardPage() {
         setLoading(true)
         setError("")
 
-        const viewerRef = doc(db, "users", firebaseUser.uid)
-        const viewerSnap = await getDoc(viewerRef)
+        await firebaseUser.getIdToken(true)
+
+        const viewerSnap = await getUserDocWithRetry(firebaseUser.uid)
 
         if (!viewerSnap.exists()) {
           setError("管理者情報が見つかりません。")

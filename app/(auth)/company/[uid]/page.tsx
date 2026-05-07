@@ -21,8 +21,9 @@ import LegalFooter from "@/app/components/LegalFooter"
 type UserDoc = {
   displayName?: string
   email?: string
-  role?: "admin" | "company_admin" | "user"
-  companyId?: string
+  role?: "admin" | "company_admin" | "learner"
+  accountType?: "personal" | "company"
+  companyCode?: string | null
   companyName?: string
   createdAt?: any
   updatedAt?: any
@@ -79,6 +80,20 @@ function formatPercent(value: number | null) {
   return `${Math.round(value)}%`
 }
 
+function sleep(ms: number) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms))
+}
+
+async function getUserDocWithRetry(uid: string, maxRetry = 5) {
+  for (let i = 0; i < maxRetry; i += 1) {
+    const snap = await getDoc(doc(db, "users", uid))
+    if (snap.exists()) return snap
+    await sleep(250 * (i + 1))
+  }
+
+  return getDoc(doc(db, "users", uid))
+}
+
 function formatQuizTypeLabel(quizType?: string) {
   if (!quizType) return "未設定"
 
@@ -103,7 +118,7 @@ export default function CompanyLearnerDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
 
-  const [viewerCompanyId, setViewerCompanyId] = useState("")
+  const [viewerCompanyCode, setViewerCompanyCode] = useState("")
   const [viewerCompanyName, setViewerCompanyName] = useState("企業管理画面")
 
   const [userData, setUserData] = useState<UserDoc | null>(null)
@@ -122,8 +137,9 @@ export default function CompanyLearnerDetailPage() {
         setLoading(true)
         setError("")
 
-        const viewerRef = doc(db, "users", firebaseUser.uid)
-        const viewerSnap = await getDoc(viewerRef)
+        await firebaseUser.getIdToken(true)
+
+        const viewerSnap = await getUserDocWithRetry(firebaseUser.uid)
 
         if (!viewerSnap.exists()) {
           setError("管理者情報が見つかりません。")
@@ -133,10 +149,10 @@ export default function CompanyLearnerDetailPage() {
 
         const viewer = viewerSnap.data() as UserDoc
         const role = viewer.role ?? ""
-        const companyId = viewer.companyId ?? ""
+        const companyCode = viewer.companyCode ?? ""
         const companyName = viewer.companyName ?? "企業管理画面"
 
-        setViewerCompanyId(companyId)
+        setViewerCompanyCode(companyCode)
         setViewerCompanyName(companyName)
 
         if (role !== "admin" && role !== "company_admin") {
@@ -156,7 +172,7 @@ export default function CompanyLearnerDetailPage() {
 
         const targetUser = targetSnap.data() as UserDoc
 
-        if (role === "company_admin" && targetUser.companyId !== companyId) {
+        if (role === "company_admin" && targetUser.companyCode !== companyCode) {
           setError("この学習者を見る権限がありません。")
           setLoading(false)
           return
@@ -275,7 +291,7 @@ export default function CompanyLearnerDetailPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50">
-        <CompanyHeader companyName={viewerCompanyName || viewerCompanyId || "企業管理画面"} />
+        <CompanyHeader companyName={viewerCompanyName || viewerCompanyCode || "企業管理画面"} />
         <main className="mx-auto max-w-6xl px-4 py-8">
           <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
             <p className="text-sm text-slate-500">読み込み中...</p>
@@ -289,7 +305,7 @@ export default function CompanyLearnerDetailPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-slate-50">
-        <CompanyHeader companyName={viewerCompanyName || viewerCompanyId || "企業管理画面"} />
+        <CompanyHeader companyName={viewerCompanyName || viewerCompanyCode || "企業管理画面"} />
         <main className="mx-auto max-w-6xl px-4 py-8">
           <div className="rounded-2xl border border-red-200 bg-white p-8 shadow-sm">
             <p className="text-sm font-medium text-red-600">{error}</p>
@@ -310,7 +326,7 @@ export default function CompanyLearnerDetailPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <CompanyHeader companyName={viewerCompanyName || viewerCompanyId || "企業管理画面"} />
+      <CompanyHeader companyName={viewerCompanyName || viewerCompanyCode || "企業管理画面"} />
 
       <main className="mx-auto max-w-6xl px-4 py-8">
         <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
@@ -350,7 +366,7 @@ export default function CompanyLearnerDetailPage() {
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <p className="text-sm text-slate-500">所属企業</p>
             <p className="mt-2 text-lg font-bold text-slate-900">
-              {userData?.companyName || userData?.companyId || "未設定"}
+              {userData?.companyName || userData?.companyCode || "未設定"}
             </p>
           </div>
 
