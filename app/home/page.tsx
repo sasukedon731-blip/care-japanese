@@ -11,7 +11,7 @@ import LegalFooter from "@/app/components/LegalFooter"
 type UserDoc={displayName?:string};type ResultDoc={correctCount?:number;totalQuestions?:number;accuracy?:number;createdAt?:any;updatedAt?:any}
 const MENUS=[
 {title:"学習",en:"Study",href:"/select-mode",desc:"日本語検定、介護用語、介護現場会話、介護福祉士試験対策をまとめて学習できます。",badge:"日本語 / 介護 / 資格",cls:"border-blue-200 bg-blue-50/50"},
-{title:"AI",en:"AI Practice",href:"/select-mode#ai",desc:"AI会話とAIスピークで、職場・面接・日常会話の実践練習につなげます。",badge:"会話 + スピーク",cls:"border-purple-200 bg-purple-50/50"},
+{title:"AI",en:"AI Practice",href:"/ai",desc:"AI会話とAIスピークで、職場・面接・日常会話の実践練習につなげます。",badge:"会話 + スピーク",cls:"border-purple-200 bg-purple-50/50"},
 {title:"ゲーム",en:"Game",href:"/game",desc:"日本語バトルで語彙・文法・判断力をゲーム形式で反復できます。",badge:"日本語バトル",cls:"border-amber-200 bg-amber-50/60"},
 ]
 function toDate(v:any){try{if(!v)return null;if(typeof v?.toDate==="function")return v.toDate();const d=new Date(v);return Number.isNaN(d.getTime())?null:d}catch{return null}}
