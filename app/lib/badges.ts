@@ -35,7 +35,7 @@ type UnlockState = {
   reviewPlays?: number
   maxScore?: number
   streak?: number
-  industryCounts?: Partial<Record<"care" | "driver", number>>
+  industryCounts?: Partial<Record<"construction" | "manufacturing" | "care" | "driver", number>>
 }
 
 export function getPerfectBadgeId(quizType: string) {
@@ -86,7 +86,7 @@ const BASE_BADGES: BadgeDef[] = [
     icon: "🎮",
     image: buildImagePath("battle", "battle-first-play"),
     label: "はじめての挑戦",
-    description: "日本語バトルに初挑戦",
+    description: "ゲーム日本語学習に初挑戦",
     howToUnlock: "どれかのゲームを1回プレイ",
     rarity: "common",
     group: "battle",
@@ -96,9 +96,9 @@ const BASE_BADGES: BadgeDef[] = [
     id: "battle-attack-first",
     icon: "🏁",
     image: buildImagePath("battle", "battle-attack-first"),
-    label: "アタック挑戦者",
-    description: "アタックモードに初挑戦",
-    howToUnlock: "どれかのゲームでアタックを1回プレイ",
+    label: "集中チャレンジ挑戦者",
+    description: "集中チャレンジに初挑戦",
+    howToUnlock: "集中チャレンジを1回プレイ",
     rarity: "common",
     group: "battle",
     order: 2,
@@ -107,9 +107,9 @@ const BASE_BADGES: BadgeDef[] = [
     id: "tile-drop-first-clear",
     icon: "🔨",
     image: buildImagePath("battle", "tile-drop-first-clear"),
-    label: "文字ブレイク入門",
-    description: "文字ブレイクを初クリア",
-    howToUnlock: "文字ブレイクを1回最後までプレイ",
+    label: "ことば並べ入門",
+    description: "ことば並べを初クリア",
+    howToUnlock: "ことば並べを1回最後までプレイ",
     rarity: "common",
     group: "battle",
     order: 3,
@@ -118,9 +118,9 @@ const BASE_BADGES: BadgeDef[] = [
     id: "flash-judge-first-clear",
     icon: "⚡",
     image: buildImagePath("battle", "flash-judge-first-clear"),
-    label: "瞬判スタート",
-    description: "瞬判ジャッジを初クリア",
-    howToUnlock: "瞬判ジャッジを1回最後までプレイ",
+    label: "瞬間チェック入門",
+    description: "瞬間チェックを初クリア",
+    howToUnlock: "瞬間チェックを1回最後までプレイ",
     rarity: "common",
     group: "battle",
     order: 4,
@@ -129,9 +129,9 @@ const BASE_BADGES: BadgeDef[] = [
     id: "memory-burst-first-clear",
     icon: "🧠",
     image: buildImagePath("battle", "memory-burst-first-clear"),
-    label: "記憶の扉",
-    description: "フラッシュ記憶を初クリア",
-    howToUnlock: "フラッシュ記憶を1回最後までプレイ",
+    label: "記憶トレーニング入門",
+    description: "記憶トレーニングを初クリア",
+    howToUnlock: "記憶トレーニングを1回最後までプレイ",
     rarity: "common",
     group: "battle",
     order: 5,
@@ -140,9 +140,9 @@ const BASE_BADGES: BadgeDef[] = [
     id: "study-first-answer",
     icon: "📘",
     image: buildImagePath("study", "study-first-answer"),
-    label: "はじめの1問",
-    description: "最初の1問に挑戦",
-    howToUnlock: "通常学習か模擬試験で1問解く",
+    label: "日本語日本語学習スタート",
+    description: "介護日本語の最初の1問に挑戦",
+    howToUnlock: "通常日本語学習か模擬試験で1問解く",
     rarity: "common",
     group: "study",
     order: 100,
@@ -151,9 +151,9 @@ const BASE_BADGES: BadgeDef[] = [
     id: "exam-first-clear",
     icon: "✅",
     image: buildImagePath("study", "exam-first-clear"),
-    label: "模擬デビュー",
-    description: "模擬試験を初クリア",
-    howToUnlock: "模擬試験を1回完了する",
+    label: "確認テストデビュー",
+    description: "確認テストを初クリア",
+    howToUnlock: "模擬試験または確認テストを1回完了する",
     rarity: "common",
     group: "study",
     order: 101,
@@ -162,8 +162,8 @@ const BASE_BADGES: BadgeDef[] = [
     id: "review-first-play",
     icon: "🔁",
     image: buildImagePath("study", "review-first-play"),
-    label: "復習は大事",
-    description: "復習モードに初挑戦",
+    label: "復習スタート",
+    description: "復習モードで弱点確認を開始",
     howToUnlock: "復習モードを1回プレイ",
     rarity: "common",
     group: "study",
@@ -173,9 +173,9 @@ const BASE_BADGES: BadgeDef[] = [
     id: "listening-first-play",
     icon: "🎧",
     image: buildImagePath("listening", "listening-first-play"),
-    label: "耳ならし",
-    description: "リスニング初挑戦",
-    howToUnlock: "リスニング教材を1回プレイ",
+    label: "聞き取りスタート",
+    description: "介護現場の聞き取りに初挑戦",
+    howToUnlock: "聞き取り教材を1回プレイ",
     rarity: "common",
     group: "listening",
     order: 200,
@@ -184,9 +184,9 @@ const BASE_BADGES: BadgeDef[] = [
     id: "secret-night-owl",
     icon: "🌙",
     image: buildImagePath("secret", "secret-night-owl"),
-    label: "夜の学習者",
-    description: "深夜に学習した者だけが得るバッジ",
-    howToUnlock: "深夜0:00〜4:59に学習する",
+    label: "夜のがんばり屋",
+    description: "夜の時間にも日本語学習を続けた証",
+    howToUnlock: "深夜0:00〜4:59に日本語学習する",
     rarity: "rare",
     group: "secret",
     hidden: true,
@@ -196,9 +196,9 @@ const BASE_BADGES: BadgeDef[] = [
     id: "secret-early-bird",
     icon: "🌅",
     image: buildImagePath("secret", "secret-early-bird"),
-    label: "朝の覚醒者",
-    description: "朝活でつかむ実績",
-    howToUnlock: "朝5:00〜7:59に学習する",
+    label: "朝のスタート名人",
+    description: "朝の時間に日本語学習した証",
+    howToUnlock: "朝5:00〜7:59に日本語学習する",
     rarity: "rare",
     group: "secret",
     hidden: true,
@@ -208,8 +208,8 @@ const BASE_BADGES: BadgeDef[] = [
     id: "secret-perfectionist",
     icon: "👑",
     image: buildImagePath("secret", "secret-perfectionist"),
-    label: "完璧主義者",
-    description: "高難度の条件を達成",
+    label: "満点マスター",
+    description: "満点を重ねた日本語学習者だけの特別バッジ",
     howToUnlock: "複数教材で満点を取る",
     rarity: "legend",
     group: "secret",
@@ -222,8 +222,8 @@ const battlePlayBadges = buildSeries(
   "battle",
   "battle-play",
   "🔥",
-  "バトル",
-  "ゲームプレイ達成",
+  "ゲーム日本語学習",
+  "ゲームで楽しく反復した証",
   "ゲームを合計{n}回プレイ",
   [3, 5, 10, 20, 30, 50, 75, 100, 150, 200, 300, 500],
   1000
@@ -233,9 +233,9 @@ const attackPlayBadges = buildSeries(
   "battle",
   "attack-play",
   "🏁",
-  "アタック",
-  "アタック挑戦達成",
-  "アタックを合計{n}回プレイ",
+  "集中チャレンジ",
+  "集中チャレンジ挑戦達成",
+  "集中チャレンジを合計{n}回プレイ",
   [1, 3, 5, 10, 20, 30, 50, 75, 100],
   1100
 )
@@ -244,9 +244,9 @@ const tileDropBadges = buildSeries(
   "battle",
   "tile-drop-clear",
   "🔨",
-  "文字ブレイク",
-  "文字ブレイク達成",
-  "文字ブレイクを合計{n}回クリア",
+  "ことば並べ",
+  "ことば並べ達成",
+  "ことば並べを合計{n}回クリア",
   [1, 3, 5, 10, 20, 30, 50, 75, 100],
   1200
 )
@@ -255,9 +255,9 @@ const flashJudgeBadges = buildSeries(
   "battle",
   "flash-judge-clear",
   "⚡",
-  "瞬判ジャッジ",
-  "瞬判ジャッジ達成",
-  "瞬判ジャッジを合計{n}回クリア",
+  "瞬間チェック",
+  "瞬間チェック達成",
+  "瞬間チェックを合計{n}回クリア",
   [1, 3, 5, 10, 20, 30, 50, 75, 100],
   1300
 )
@@ -266,9 +266,9 @@ const memoryBurstBadges = buildSeries(
   "battle",
   "memory-burst-clear",
   "🧠",
-  "フラッシュ記憶",
-  "フラッシュ記憶達成",
-  "フラッシュ記憶を合計{n}回クリア",
+  "記憶トレーニング",
+  "記憶トレーニング達成",
+  "記憶トレーニングを合計{n}回クリア",
   [1, 3, 5, 10, 20, 30, 50, 75, 100],
   1400
 )
@@ -277,8 +277,8 @@ const studyQuestionBadges = buildSeries(
   "study",
   "study-questions",
   "📚",
-  "学習",
-  "累計回答達成",
+  "日本語学習",
+  "介護日本語の問題に取り組んだ証",
   "累計{n}問解く",
   [1, 5, 10, 20, 30, 50, 75, 100, 150, 200, 300, 500, 750, 1000, 1500, 3000, 5000],
   2000
@@ -288,9 +288,9 @@ const listeningQuestionBadges = buildSeries(
   "listening",
   "listening-clear",
   "🎙️",
-  "リスニング",
-  "聞き取り達成",
-  "リスニング問題を累計{n}問解く",
+  "聞き取り",
+  "介護現場の聞き取り練習を重ねた証",
+  "聞き取り問題を累計{n}問解く",
   [1, 5, 10, 20, 30, 50, 75, 100, 150, 300, 500, 1000],
   2300
 )
@@ -299,8 +299,8 @@ const scoreBadges = buildSeries(
   "score",
   "score",
   "🥇",
-  "高得点",
-  "高得点達成",
+  "スコア",
+  "スコア達成",
   "どれかの教材で{n}点以上を取る",
   [50, 60, 70, 80, 90, 95, 100],
   2600
@@ -311,34 +311,28 @@ const streakBadges = buildSeries(
   "streak",
   "🌱",
   "継続",
-  "継続達成",
-  "{n}日連続で学習する",
+  "毎日の学習を続けた証",
+  "{n}日連続で日本語学習する",
   [2, 3, 5, 7, 10, 14, 21, 30, 60, 100, 180, 365],
   2800
 )
 
-function buildIndustryBadges(
-  key: "care" | "driver",
-  icon: string,
-  label: string,
-  orderStart: number
-): BadgeDef[] {
+function buildCareBadges(): BadgeDef[] {
   const values = [1, 5, 10, 20, 30, 50, 75, 100, 150, 300, 500]
   return values.map((n, idx) => ({
-    id: `${key}-${n}`,
-    icon,
-    image: buildImagePath("industry", `${key}-${n}`),
-    label: `${label} ${n}`,
-    description: `${label}教材の累計回答 ${n}`,
-    howToUnlock: `${label}系教材を累計${n}問解く`,
+    id: `care-${n}`,
+    icon: "💖",
+    image: buildImagePath("industry", `care-${n}`),
+    label: `介護ことば ${n}`,
+    description: `介護日本語の累計回答 ${n}問`,
+    howToUnlock: `介護系教材を累計${n}問解く`,
     rarity: rarityByIndex(idx, values.length - 1),
     group: "industry",
-    order: orderStart + idx,
+    order: 3000 + idx,
   }))
 }
 
-const careBadges = buildIndustryBadges("care", "💖", "介護", 3000)
-const driverBadges = buildIndustryBadges("driver", "🚗", "免許", 3100)
+const careBadges = buildCareBadges()
 
 const STATIC_CATALOG: BadgeDef[] = [
   ...BASE_BADGES,
@@ -352,7 +346,6 @@ const STATIC_CATALOG: BadgeDef[] = [
   ...scoreBadges,
   ...streakBadges,
   ...careBadges,
-  ...driverBadges,
 ].sort((a, b) => a.order - b.order)
 
 function buildPerfectBadgeMeta(badgeId: string): BadgeDef {
@@ -362,27 +355,26 @@ function buildPerfectBadgeMeta(badgeId: string): BadgeDef {
     id: badgeId,
     icon: "💯",
     image: buildImagePath("score", badgeId),
-    label: `${title} 100点`,
-    description: `${title} の模擬試験で100点を獲得`,
-    howToUnlock: `${title} の模擬試験で100点を取る`,
+    label: `${title} 満点達成`,
+    description: `${title} で満点を獲得`,
+    howToUnlock: `${title} で100点を取る`,
     rarity: "legend",
     group: "score",
     order: 20000,
   }
 }
 
-function isDeprecatedIndustryBadgeId(badgeId: string) {
-  return /^(construction|manufacturing)-\d+$/.test(badgeId)
+
+const LEGACY_BADGE_PREFIXES = ["construction-", "manufacturing-", "driver-"]
+
+function isLegacyBadgeId(id: string) {
+  return LEGACY_BADGE_PREFIXES.some((prefix) => id.startsWith(prefix))
 }
 
-export function isVisibleBadgeId(badgeId: string) {
-  return !isDeprecatedIndustryBadgeId(badgeId)
+function getValidUnlockedSet(unlockedBadgeIds: string[]) {
+  const validIds = new Set(getBadgeCatalog().map((b) => b.id))
+  return new Set(unlockedBadgeIds.filter((id) => !isLegacyBadgeId(id) && validIds.has(id)))
 }
-
-function filterVisibleBadgeIds(badgeIds: string[]) {
-  return badgeIds.filter(isVisibleBadgeId)
-}
-
 export function getBadgeMeta(badgeId: string): BadgeDef {
   if (badgeId.startsWith("perfect-")) return buildPerfectBadgeMeta(badgeId)
 
@@ -417,7 +409,7 @@ export function getBadgeCatalog(): BadgeDef[] {
 }
 
 export function getAllBadgeMeta(unlockedBadgeIds: string[]) {
-  const unlocked = new Set(filterVisibleBadgeIds(unlockedBadgeIds))
+  const unlocked = getValidUnlockedSet(unlockedBadgeIds)
   return getBadgeCatalog().map((badge) => ({
     ...badge,
     unlocked: unlocked.has(badge.id),
@@ -425,7 +417,7 @@ export function getAllBadgeMeta(unlockedBadgeIds: string[]) {
 }
 
 export function getUnlockedBadgeCount(unlockedBadgeIds: string[]) {
-  return filterVisibleBadgeIds(unlockedBadgeIds).length
+  return getValidUnlockedSet(unlockedBadgeIds).size
 }
 
 export function getTotalBadgeCount() {
@@ -433,7 +425,7 @@ export function getTotalBadgeCount() {
 }
 
 export function getPreviewBadgeMeta(unlockedBadgeIds: string[], limit = 8) {
-  const unlockedSet = new Set(filterVisibleBadgeIds(unlockedBadgeIds))
+  const unlockedSet = getValidUnlockedSet(unlockedBadgeIds)
   return getBadgeCatalog()
     .filter((b) => unlockedSet.has(b.id))
     .slice(0, limit)
@@ -473,11 +465,11 @@ export function getBadgeGroupLabel(group: BadgeGroup) {
     case "battle":
       return "ゲーム"
     case "study":
-      return "学習"
+      return "日本語学習"
     case "listening":
-      return "リスニング"
+      return "聞き取り"
     case "industry":
-      return "業種"
+      return "介護"
     case "streak":
       return "継続"
     case "score":
@@ -540,10 +532,8 @@ export function computeUnlockedBadges(currentBadgeIds: string[], state: UnlockSt
     tryAdd(`streak-${n}`, (state.streak ?? 0) >= n)
   )
 
-  ;(["care", "driver"] as const).forEach((key) => {
-    ;[1, 5, 10, 20, 30, 50, 75, 100, 150, 300, 500].forEach((n) => {
-      tryAdd(`${key}-${n}`, (state.industryCounts?.[key] ?? 0) >= n)
-    })
+  ;[1, 5, 10, 20, 30, 50, 75, 100, 150, 300, 500].forEach((n) => {
+    tryAdd(`care-${n}`, (state.industryCounts?.care ?? 0) >= n)
   })
 
   return newlyUnlocked
