@@ -35,7 +35,7 @@ type UnlockState = {
   reviewPlays?: number
   maxScore?: number
   streak?: number
-  industryCounts?: Partial<Record<"construction" | "manufacturing" | "care" | "driver", number>>
+  industryCounts?: Partial<Record<"care" | "driver", number>>
 }
 
 export function getPerfectBadgeId(quizType: string) {
@@ -318,7 +318,7 @@ const streakBadges = buildSeries(
 )
 
 function buildIndustryBadges(
-  key: "construction" | "manufacturing" | "care" | "driver",
+  key: "care" | "driver",
   icon: string,
   label: string,
   orderStart: number
@@ -337,10 +337,8 @@ function buildIndustryBadges(
   }))
 }
 
-const constructionBadges = buildIndustryBadges("construction", "🏗️", "建設", 3000)
-const manufacturingBadges = buildIndustryBadges("manufacturing", "⚙️", "製造", 3100)
-const careBadges = buildIndustryBadges("care", "💖", "介護", 3200)
-const driverBadges = buildIndustryBadges("driver", "🚗", "免許", 3300)
+const careBadges = buildIndustryBadges("care", "💖", "介護", 3000)
+const driverBadges = buildIndustryBadges("driver", "🚗", "免許", 3100)
 
 const STATIC_CATALOG: BadgeDef[] = [
   ...BASE_BADGES,
@@ -353,8 +351,6 @@ const STATIC_CATALOG: BadgeDef[] = [
   ...listeningQuestionBadges,
   ...scoreBadges,
   ...streakBadges,
-  ...constructionBadges,
-  ...manufacturingBadges,
   ...careBadges,
   ...driverBadges,
 ].sort((a, b) => a.order - b.order)
@@ -373,6 +369,18 @@ function buildPerfectBadgeMeta(badgeId: string): BadgeDef {
     group: "score",
     order: 20000,
   }
+}
+
+function isDeprecatedIndustryBadgeId(badgeId: string) {
+  return /^(construction|manufacturing)-\d+$/.test(badgeId)
+}
+
+export function isVisibleBadgeId(badgeId: string) {
+  return !isDeprecatedIndustryBadgeId(badgeId)
+}
+
+function filterVisibleBadgeIds(badgeIds: string[]) {
+  return badgeIds.filter(isVisibleBadgeId)
 }
 
 export function getBadgeMeta(badgeId: string): BadgeDef {
@@ -409,7 +417,7 @@ export function getBadgeCatalog(): BadgeDef[] {
 }
 
 export function getAllBadgeMeta(unlockedBadgeIds: string[]) {
-  const unlocked = new Set(unlockedBadgeIds)
+  const unlocked = new Set(filterVisibleBadgeIds(unlockedBadgeIds))
   return getBadgeCatalog().map((badge) => ({
     ...badge,
     unlocked: unlocked.has(badge.id),
@@ -417,7 +425,7 @@ export function getAllBadgeMeta(unlockedBadgeIds: string[]) {
 }
 
 export function getUnlockedBadgeCount(unlockedBadgeIds: string[]) {
-  return unlockedBadgeIds.length
+  return filterVisibleBadgeIds(unlockedBadgeIds).length
 }
 
 export function getTotalBadgeCount() {
@@ -425,7 +433,7 @@ export function getTotalBadgeCount() {
 }
 
 export function getPreviewBadgeMeta(unlockedBadgeIds: string[], limit = 8) {
-  const unlockedSet = new Set(unlockedBadgeIds)
+  const unlockedSet = new Set(filterVisibleBadgeIds(unlockedBadgeIds))
   return getBadgeCatalog()
     .filter((b) => unlockedSet.has(b.id))
     .slice(0, limit)
@@ -532,7 +540,7 @@ export function computeUnlockedBadges(currentBadgeIds: string[], state: UnlockSt
     tryAdd(`streak-${n}`, (state.streak ?? 0) >= n)
   )
 
-  ;(["construction", "manufacturing", "care", "driver"] as const).forEach((key) => {
+  ;(["care", "driver"] as const).forEach((key) => {
     ;[1, 5, 10, 20, 30, 50, 75, 100, 150, 300, 500].forEach((n) => {
       tryAdd(`${key}-${n}`, (state.industryCounts?.[key] ?? 0) >= n)
     })
