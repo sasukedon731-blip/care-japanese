@@ -10,10 +10,10 @@ type PlanId = "3" | "5" | "7"
 type PaymentMethodType = "convenience" | "card"
 type IndustryId = "care" | "undecided"
 
-function parseDurationDays(v: unknown): 30 | 180 | 365 {
+function parseDurationDays(v: unknown): 30 | 90 | 180 {
   const n = Number(v)
+  if (n === 90) return 90
   if (n === 180) return 180
-  if (n === 365) return 365
   return 30
 }
 

@@ -89,11 +89,9 @@ export function getBillingViewState(billing?: BillingLike | null) {
 export function getPlanLabel(plan?: string | null) {
   switch (plan) {
     case "3":
-      return "3教材プラン"
     case "5":
-      return "5教材プラン"
     case "7":
-      return "7教材プラン"
+      return "Care Japanese App"
     case "trial":
       return "トライアル"
     case "free":

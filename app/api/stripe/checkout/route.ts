@@ -12,41 +12,41 @@ type Body = {
   idToken: string
   plan: "3" | "5" | "7"
   method: "convenience" | "card"
-  durationDays: 30 | 180 | 365
+  durationDays: 30 | 90 | 180
   industry?: IndustryId | null
   addAiConversation?: boolean
 }
 
-// ✅ 30日=500円（3教材プラン）に合わせた価格テーブル
-// - 半年：10%OFF
-// - 年：20%OFF
-const PRICE_TABLE: Record<Body["plan"], Record<30 | 180 | 365, number>> = {
+// ✅ 買い切り型：1ヶ月・3ヶ月・6ヶ月
+// 介護アプリでは基本機能を「Care Japanese App」として販売するため、
+// フロントからは plan="7"（全教材）で送る。旧3/5プラン互換のため価格定義は残す。
+const PRICE_TABLE: Record<Body["plan"], Record<30 | 90 | 180, number>> = {
   "3": {
-    30: 500,
-    180: Math.round(500 * 6 * 0.9),
-    365: Math.round(500 * 12 * 0.8),
+    30: 1000,
+    90: 2700,
+    180: 4800,
   },
   "5": {
-    30: 800,
-    180: Math.round(800 * 6 * 0.9),
-    365: Math.round(800 * 12 * 0.8),
+    30: 1000,
+    90: 2700,
+    180: 4800,
   },
   "7": {
     30: 1000,
-    180: Math.round(1000 * 6 * 0.9),
-    365: Math.round(1000 * 12 * 0.8),
+    90: 2700,
+    180: 4800,
   },
 }
 
 
-const PRICE_TABLE_ADDON: Record<30 | 180 | 365, number> = {
+const PRICE_TABLE_ADDON: Record<30 | 90 | 180, number> = {
   30: 500,
-  180: Math.round(500 * 6 * 0.9),
-  365: Math.round(500 * 12 * 0.8),
+  90: 1500,
+  180: 3000,
 }
 
-function isValidDuration(v: any): v is 30 | 180 | 365 {
-  return v === 30 || v === 180 || v === 365
+function isValidDuration(v: any): v is 30 | 90 | 180 {
+  return v === 30 || v === 90 || v === 180
 }
 
 
@@ -109,12 +109,7 @@ if (!appUrl) {
   throw new Error("Missing NEXT_PUBLIC_APP_URL")
 }
 
-    const planName =
-      body.plan === "3"
-        ? "3教材プラン"
-        : body.plan === "5"
-        ? "5教材プラン"
-        : "7教材プラン"
+    const planName = "Care Japanese App"
 
     // ✅ Create Checkout Session (one-time payment)
     // Konbini is async: webhook flips pending -> active.

@@ -12,7 +12,6 @@ import type { QuizType } from "@/app/data/types"
 import { quizCatalog } from "@/app/data/quizCatalog"
 import { fetchMyAttackRank } from "../game/firestore"
 import BillingStatusCard from "@/app/components/billing/BillingStatusCard"
-import { getPlanLabel } from "@/app/lib/billingAccess"
 import {
   getPreviewBadgeMeta,
   getTotalBadgeCount,
@@ -452,8 +451,6 @@ export default function MyPage() {
 
 const unlockedBadgeCount = useMemo(() => getUnlockedBadgeCount(badges), [badges])
 const totalBadgeCount = useMemo(() => getTotalBadgeCount(), [badges])
-const currentPlanLabel = useMemo(() => getPlanLabel(billing?.currentPlan ?? null), [billing])
-
   // =======================
   // summaries
   // =======================
@@ -571,51 +568,29 @@ const currentPlanLabel = useMemo(() => getPlanLabel(billing?.currentPlan ?? null
           </div>
         </section>
 
-        {/* ✅ あなたの設定 */}
+        {/* ✅ 学習サマリー */}
         <section style={S.card}>
           <div style={S.cardHeadRow}>
-            <div style={S.cardTitle}>あなたの設定</div>
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-              <button style={S.linkBtn} onClick={() => router.push(withIndustry("/select-quizzes"))} title="教材選択へ">
-                教材を変更 →
-              </button>
-
-              <button style={S.linkBtn} onClick={() => setShowAllCards((v) => !v)} title="教材カードの表示切替">
-                {showAllCards ? "業種で絞る" : "すべて表示"}
-              </button>
+            <div>
+              <div style={S.cardTitle}>学習サマリー</div>
+              <div style={S.miniNote}>学習状況と直近の成果を確認できます</div>
             </div>
+            <button style={S.linkBtn} onClick={() => router.push("/plans")} title="プラン購入へ">
+              プランを見る →
+            </button>
           </div>
 
-          <div style={{ marginTop: 10, display: "grid", gap: 10 }}>
-            <div style={S.kv}>
-              <div style={S.kvLabel}>選択中の業種</div>
-              <div style={S.kvValue}>{industry ? INDUSTRY_LABEL[industry] : "未設定"}</div>
-              <div style={S.kvHint}>
-                {industry
-                  ? "マイページの教材カードは業種で最適化されています（日本語基礎は常に表示）"
-                  : "業種を選ぶと、教材カードが最適化されます"}
-              </div>
-            </div>
-
-            <div style={S.kv}>
-              <div style={S.kvLabel}>現在のプラン</div>
-              <div style={S.kvValue}>{currentPlanLabel}</div>
-              <div style={S.kvHint}>契約状態や有効期限は下の「ご利用プラン」で確認できます</div>
-            </div>
-
-            {/* ✅ 進捗（2列・コンパクト） */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-              <MiniStat label="総学習回数" value={`${totalSessionsAll}`} sub="全教材合計" />
-              <MiniStat label="最新の合格率" value={latestAcc === null ? "—" : `${latestAcc}%`} sub="直近の結果" />
-              <MiniStat label="今日の学習" value={`${todaySessionsAll}`} sub="今日の回数" />
-              <MiniStat label="最大streak" value={streakMax ? String(streakMax) : "—"} sub="教材別の最大streak" />
-            </div>
+          <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <MiniStat label="総学習回数" value={`${totalSessionsAll}`} sub="全教材合計" />
+            <MiniStat label="最新の合格率" value={latestAcc === null ? "—" : `${latestAcc}%`} sub="直近の結果" />
+            <MiniStat label="今日の学習" value={`${todaySessionsAll}`} sub="今日の回数" />
+            <MiniStat label="最大streak" value={streakMax ? String(streakMax) : "—"} sub="教材別の最大streak" />
           </div>
         </section>
 
         <section style={S.card}>
           <PendingPaymentNotice billing={billing} />
-          <BillingStatusCard billing={billing} plansHref="/select-mode" />
+          <BillingStatusCard billing={billing} plansHref="/plans" />
         </section>
 
         {/* AI学習履歴 */}
@@ -1167,6 +1142,8 @@ const S: Record<string, React.CSSProperties> = {
     zIndex: 1001,
     padding: 16,
     boxShadow: "-6px 0 22px rgba(0,0,0,0.18)",
+    overflowY: "auto",
+    WebkitOverflowScrolling: "touch",
   },
   drawerHead: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 },
   drawerClose: {
@@ -1179,7 +1156,7 @@ const S: Record<string, React.CSSProperties> = {
     fontSize: 18,
     fontWeight: 900,
   },
-  nav: { display: "flex", flexDirection: "column", gap: 10 },
+  nav: { display: "flex", flexDirection: "column", gap: 10, paddingBottom: 24 },
   navItem: {
     textDecoration: "none",
     color: "#111",

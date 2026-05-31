@@ -21,7 +21,7 @@ export type BillingPatch = Partial<{
   aiConversationExpiresAt: any
 
   // ✅ 上乗せ計算用
-  purchasedDurationDays: 30 | 180 | 365
+  purchasedDurationDays: 30 | 90 | 180
 }>
 
 type UserDoc = {
@@ -66,7 +66,7 @@ function addDays(from: Date, days: number) {
   return d
 }
 
-function calcExtendedEnd(currentEnd: any, durationDays: 30 | 180 | 365) {
+function calcExtendedEnd(currentEnd: any, durationDays: 30 | 90 | 180) {
   const now = new Date()
   const current = toDateOrNull(currentEnd)
   const base =

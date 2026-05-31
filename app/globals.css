@@ -541,12 +541,14 @@ body {
 }
 .drawerPanel{
   width:min(320px, 86vw);
-  height:100%;
+  height:100dvh;
+  max-height:100dvh;
   background:#fff;
   padding:14px;
   box-shadow:-12px 0 32px rgba(0,0,0,0.18);
   display:flex;
   flex-direction:column;
+  overflow:hidden;
 }
 .drawerHead{
   display:flex;
@@ -567,6 +569,9 @@ body {
   display:flex;
   flex-direction:column;
   gap:10px;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  padding-bottom:24px;
 }
 .drawerBody .btn{
   width:100%;
