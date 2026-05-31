@@ -385,15 +385,29 @@ export default function LandingPage() {
               >
                 法人導入はこちら
               </Link>
+
+              <Link
+                href="/contact"
+                className="btn-secondary min-h-[56px] w-full sm:w-auto sm:min-w-[190px]"
+              >
+                お問い合わせ
+              </Link>
             </div>
 
-            <div className="mt-5">
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
               <Link
                 href="/login"
                 className="text-sm font-semibold text-slate-700 underline underline-offset-4 hover:text-slate-900"
               >
                 すでにアカウントをお持ちの方はこちら
               </Link>
+
+              <a
+                href="mailto:support@outin-plus.com"
+                className="text-sm font-semibold text-slate-700 underline underline-offset-4 hover:text-slate-900"
+              >
+                support@outin-plus.com
+              </a>
             </div>
           </div>
         </section>

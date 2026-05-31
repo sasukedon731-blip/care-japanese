@@ -318,11 +318,18 @@ export default function ForBusinessPage() {
 
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <a
-                href="mailto:info@outin-plus.com?subject=導入相談"
+                href="mailto:support@outin-plus.com?subject=Care Japanese App 導入相談"
                 className="btn-dark min-h-[56px] w-full sm:w-auto sm:min-w-[190px]"
               >
                 メールで問い合わせる
               </a>
+
+              <Link
+                href="/contact"
+                className="btn-secondary min-h-[56px] w-full sm:w-auto sm:min-w-[190px]"
+              >
+                お問い合わせページへ
+              </Link>
 
               <Link
                 href="/company/login"
@@ -333,7 +340,7 @@ export default function ForBusinessPage() {
             </div>
 
             <p className="mt-4 text-sm text-slate-500">
-              うまくメールが起動しない場合は、info@outin-plus.com まで直接ご連絡ください。
+              うまくメールが起動しない場合は、support@outin-plus.com まで直接ご連絡ください。
             </p>
           </div>
         </section>

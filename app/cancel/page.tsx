@@ -8,10 +8,11 @@ export default function CancelPage() {
   return (
     <main style={styles.main}>
       <section style={styles.card}>
+        <p style={styles.kicker}>Care Japanese App</p>
         <h1 style={styles.title}>利用期限・再購入について</h1>
 
         <p style={styles.lead}>
-          外国人学習プラットフォームは、月額サブスクリプションではなく、
+          Care Japanese Appは、月額サブスクリプションではなく、
           <b>買い切り型の期間利用学習メニュー</b>です。
         </p>
 
@@ -19,7 +20,7 @@ export default function CancelPage() {
           <div style={styles.pointTitle}>このページで伝えたいこと</div>
           <ul style={styles.list}>
             <li>自動更新はありません</li>
-            <li>解約手続きは不要です</li>
+            <li>月額課金の解約手続きは不要です</li>
             <li>利用期間が終わると有料機能は停止します</li>
             <li>継続したい場合は、再度学習メニューを購入してください</li>
           </ul>
@@ -47,6 +48,17 @@ export default function CancelPage() {
           <h2 style={styles.sectionTitle}>再度使いたい場合</h2>
           <p style={styles.text}>
             利用期間終了後に、学習メニューページから希望の期間・教材数を選んで再購入してください。
+            <br />
+            コンビニ決済を選択した場合は、入金確認後に利用可能となります。
+          </p>
+        </section>
+
+        <section style={styles.section}>
+          <h2 style={styles.sectionTitle}>お問い合わせ</h2>
+          <p style={styles.text}>
+            利用期間、購入状況、再購入について不明点がある場合は、以下までご連絡ください。
+            <br />
+            support@outin-plus.com
           </p>
         </section>
 
@@ -56,6 +68,9 @@ export default function CancelPage() {
           </Link>
           <Link href="/legal/refund" style={styles.secondaryBtn}>
             返金ポリシーを見る
+          </Link>
+          <Link href="/contact" style={styles.secondaryBtn}>
+            お問い合わせ
           </Link>
         </div>
       </section>
@@ -75,15 +90,23 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: 18,
     padding: 20,
   },
+  kicker: {
+    margin: "0 0 6px",
+    fontSize: 13,
+    fontWeight: 900,
+    color: "#2563eb",
+  },
   title: {
     margin: 0,
     fontSize: 28,
     fontWeight: 900,
+    color: "#0f172a",
   },
   lead: {
     marginTop: 12,
     fontSize: 15,
     lineHeight: 1.9,
+    color: "#1f2937",
   },
   pointBox: {
     marginTop: 18,
@@ -96,12 +119,14 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: 15,
     fontWeight: 900,
     marginBottom: 10,
+    color: "#0f172a",
   },
   list: {
     margin: 0,
     paddingLeft: 20,
     lineHeight: 1.9,
     fontSize: 14,
+    color: "#1f2937",
   },
   section: {
     marginTop: 20,
@@ -110,6 +135,7 @@ const styles: Record<string, React.CSSProperties> = {
     margin: "0 0 8px",
     fontSize: 18,
     fontWeight: 900,
+    color: "#0f172a",
   },
   text: {
     margin: 0,

@@ -12,4 +12,5 @@ export const APP_MENU: AppMenuItem[] = [
   { href: "/game", icon: "🎮", label: "ゲーム", labelEn: "Game" },
   { href: "/mypage", icon: "👤", label: "マイページ", labelEn: "My Page" },
   { href: "/for-business", icon: "🏢", label: "法人向け", labelEn: "Business" },
+  { href: "/contact", icon: "✉️", label: "お問い合わせ", labelEn: "Contact" },
 ]

@@ -26,6 +26,7 @@ export default function LegalFooter({ compact = false }: Props) {
         <FooterLink href="/legal/privacy">プライバシーポリシー</FooterLink>
         <FooterLink href="/legal/refund">返金ポリシー</FooterLink>
         <FooterLink href="/cancel">利用期限・再購入について</FooterLink>
+        <FooterLink href="/contact">お問い合わせ</FooterLink>
       </div>
 
       <p
@@ -36,8 +37,8 @@ export default function LegalFooter({ compact = false }: Props) {
           color: "rgba(17,24,39,.68)",
         }}
       >
-        現在このアプリは課金なしで学習機能を提供しています。
-        利用期間終了後は、必要に応じて再購入してください。
+        Care Japanese Appは買い切り型の期間利用サービスです。自動更新はありません。
+        お問い合わせは support@outin-plus.com までお願いいたします。
       </p>
     </footer>
   )
