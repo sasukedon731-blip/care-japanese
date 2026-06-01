@@ -84,7 +84,7 @@ export default function PlansPage() {
 
       const idToken = await user.getIdToken(true)
 
-      const res = await fetch("/api/stripe/checkout", {
+      const res = await fetch("/api/komoju/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

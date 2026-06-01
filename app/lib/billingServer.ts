@@ -16,6 +16,9 @@ export type BillingPatch = Partial<{
   stripeCustomerId: string | null
   stripeCheckoutSessionId: string | null
   stripePaymentIntentId: string | null
+  komojuSessionId: string | null
+  komojuPaymentId: string | null
+  komojuOrderId: string | null
   updatedAt: any
   aiConversationEnabled: boolean
   aiConversationExpiresAt: any

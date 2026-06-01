@@ -46,6 +46,9 @@ type BillingData = Partial<{
   aiConversationExpiresAt: any
   stripeCheckoutSessionId: string | null
   stripePaymentIntentId: string | null
+  komojuSessionId: string | null
+  komojuPaymentId: string | null
+  komojuOrderId: string | null
   method: "convenience" | "card"
 }>
 
