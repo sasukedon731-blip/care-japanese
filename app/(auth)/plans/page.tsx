@@ -24,20 +24,20 @@ const PLAN_OPTIONS: PlanOption[] = [
     durationDays: 30,
     label: "1ヶ月プラン",
     sub: "まず試したい方向け",
-    price: 1000,
+    price: 500,
   },
   {
     durationDays: 90,
     label: "3ヶ月プラン",
-    sub: "学習習慣を作りたい方向け",
-    price: 2700,
+    sub: "1ヶ月より300円お得",
+    price: 1200,
     badge: "おすすめ",
   },
   {
     durationDays: 180,
     label: "6ヶ月プラン",
-    sub: "じっくり介護日本語を伸ばしたい方向け",
-    price: 4800,
+    sub: "1ヶ月ずつより1,000円お得",
+    price: 2000,
     badge: "お得",
   },
 ]
@@ -189,7 +189,7 @@ export default function PlansPage() {
           <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
             <h2 className="text-xl font-black">AI会話オプション</h2>
             <p className="mt-2 text-sm leading-7 text-slate-600">
-              AI会話・AIスピークを使う場合だけ追加してください。基本学習だけなら追加なしで購入できます。
+              AI会話・AIスピークを使う場合だけ追加してください。AI追加は1ヶ月500円で、長期プランでも割引なしです。
             </p>
 
             <button
