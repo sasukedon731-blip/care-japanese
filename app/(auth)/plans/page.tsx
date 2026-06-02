@@ -10,6 +10,12 @@ import KonbiniGuideNotice from "@/app/components/billing/KonbiniGuideNotice"
 
 type DurationDays = 30 | 90 | 180
 type PaymentMethod = "card" | "convenience"
+type AccessPlanId = "7"
+
+// Care Japanese Appは「教材数プラン」ではなく「利用期間プラン」。
+// 既存の権限ロジックでは plan="7" が全機能アクセスを表すため、
+// 魔法の数字として直接書かず、明示的な定数として扱う。
+const CARE_JAPANESE_FULL_ACCESS_PLAN: AccessPlanId = "7"
 
 type PlanOption = {
   durationDays: DurationDays
@@ -89,7 +95,7 @@ export default function PlansPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           idToken,
-          plan: "7",
+          plan: CARE_JAPANESE_FULL_ACCESS_PLAN,
           method,
           durationDays,
           industry: "care",
