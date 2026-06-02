@@ -1,7 +1,7 @@
 // app/lib/billingAccess.ts
 
 export type BillingLike = Partial<{
-  status: "pending" | "active" | "past_due" | "canceled"
+  status: "inactive" | "pending" | "active" | "past_due" | "canceled"
   currentPlan: "trial" | "free" | "3" | "5" | "7"
   currentPeriodEnd: any
   aiConversationEnabled: boolean
@@ -79,6 +79,7 @@ export function getAiConversationEndDate(billing?: BillingLike | null) {
 
 export function getBillingViewState(billing?: BillingLike | null) {
   if (!billing) return "none" as const
+  if (billing.status === "inactive") return "none" as const
   if (billing.status === "pending") return "pending" as const
   if (billing.status === "past_due") return "past_due" as const
   if (billing.status === "canceled") return "canceled" as const

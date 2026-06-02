@@ -132,7 +132,7 @@ if (devUnlockAll) {
     patch.billing = {
       accountType: "personal",
       method: "convenience",
-      status: "active", // 決済未実装の現段階では既存ユーザーを active 扱い（後で pending/active に切替）
+      status: "inactive", // 未購入ユーザーは自動で有効化しない
       currentPlan: plan,
       currentPeriodEnd: null,
       aiConversationEnabled: false,
@@ -279,7 +279,7 @@ export async function savePlanAndNormalizeSelected(params: {
         : {
             accountType: "personal",
             method: "convenience",
-            status: "active",
+            status: "inactive",
             currentPlan: params.plan,
             currentPeriodEnd: null,
             aiConversationEnabled: false,
