@@ -2,7 +2,7 @@
 "use client"
 
 import { db } from "@/app/lib/firebase"
-import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore"
+import { deleteField, doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore"
 
 export type UserRole = "admin" | "company_admin" | "learner"
 
@@ -29,7 +29,15 @@ export async function ensureUserProfile(params: EnsureParams) {
       role: "learner" as UserRole,
       companyCode: null,
       companyName: null,
-      quizLimit: 3,
+      billing: {
+        accountType: "personal",
+        method: "convenience",
+        status: "inactive",
+        currentPlan: null,
+        currentPeriodEnd: null,
+        aiConversationEnabled: false,
+        aiConversationExpiresAt: null,
+      },
       selectedQuizTypes: [],
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
@@ -49,8 +57,19 @@ export async function ensureUserProfile(params: EnsureParams) {
   if (!data?.role) patch.role = "learner"
   if (!("companyCode" in data)) patch.companyCode = null
   if (!("companyName" in data)) patch.companyName = null
-  if (typeof data?.quizLimit !== "number") patch.quizLimit = 3
+  if (typeof data?.quizLimit === "number") patch.quizLimit = deleteField()
   if (!Array.isArray(data?.selectedQuizTypes)) patch.selectedQuizTypes = []
+  if (!data?.billing) {
+    patch.billing = {
+      accountType: data?.accountType === "company" ? "company" : "personal",
+      method: "convenience",
+      status: "inactive",
+      currentPlan: null,
+      currentPeriodEnd: null,
+      aiConversationEnabled: false,
+      aiConversationExpiresAt: null,
+    }
+  }
 
   await setDoc(ref, patch, { merge: true })
 }

@@ -132,8 +132,8 @@ if (devUnlockAll) {
     patch.billing = {
       accountType: "personal",
       method: "convenience",
-      status: "inactive", // 未購入ユーザーは自動で有効化しない
-      currentPlan: plan,
+      status: "inactive", // 未購入ユーザー。KOMOJU入金後のWebhookだけが active にする
+      currentPlan: null,
       currentPeriodEnd: null,
       aiConversationEnabled: false,
     }
@@ -156,7 +156,11 @@ if (devUnlockAll) {
   if (!data?.billing) {
     ensureBilling()
   } else if (data?.billing?.currentPlan !== plan) {
-    patch.billing = { ...data.billing, currentPlan: plan }
+    // 既存の有効課金がある場合だけ currentPlan を同期する。
+    // 未購入・支払い待ちユーザーを教材選択だけで有効化しない。
+    if (data.billing?.status === "active") {
+      patch.billing = { ...data.billing, currentPlan: plan }
+    }
     needUpdate = true
   }
 
@@ -275,14 +279,17 @@ export async function savePlanAndNormalizeSelected(params: {
       plan: params.plan,
       schemaVersion: 3,
       billing: data?.billing
-        ? { ...data.billing, currentPlan: params.plan }
+        ? data.billing?.status === "active"
+          ? { ...data.billing, currentPlan: params.plan }
+          : data.billing
         : {
             accountType: "personal",
             method: "convenience",
             status: "inactive",
-            currentPlan: params.plan,
+            currentPlan: null,
             currentPeriodEnd: null,
             aiConversationEnabled: false,
+            aiConversationExpiresAt: null,
           },
       selectedQuizTypes: selected,
       entitledQuizTypes: deleteField(),

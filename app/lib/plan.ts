@@ -21,18 +21,36 @@ export function normalizeSelectedForPlan(
   return uniq.length > 0 ? uniq : entitled
 }
 
-export type BillingStatus = "pending" | "active" | "past_due" | "canceled"
+export type BillingStatus = "inactive" | "pending" | "active" | "past_due" | "canceled"
 export type BillingMethod = "convenience" | "card" | "bank_transfer"
 export type AccountType = "personal" | "company"
 
-export function getBillingStatus(_userDoc: any): BillingStatus {
-  return "active"
+function toDate(value: any): Date | null {
+  if (!value) return null
+  if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value
+  if (typeof value?.toDate === "function") {
+    const d = value.toDate()
+    return d instanceof Date && !Number.isNaN(d.getTime()) ? d : null
+  }
+  if (typeof value?.seconds === "number") return new Date(value.seconds * 1000)
+  const d = new Date(value)
+  return Number.isNaN(d.getTime()) ? null : d
 }
 
-export function isAccessActive(_userDoc: any): boolean {
-  return true
+export function getBillingStatus(userDoc: any): BillingStatus {
+  const status = userDoc?.billing?.status
+  if (status === "active" || status === "pending" || status === "past_due" || status === "canceled") return status
+  return "inactive"
 }
 
-export function getEffectivePlanId(_userDoc: any): PlanId {
-  return "7"
+export function isAccessActive(userDoc: any): boolean {
+  const billing = userDoc?.billing
+  if (billing?.status !== "active") return false
+  const end = toDate(billing?.currentPeriodEnd)
+  return !!end && end.getTime() > Date.now()
+}
+
+export function getEffectivePlanId(userDoc: any): PlanId {
+  const plan = userDoc?.billing?.currentPlan ?? userDoc?.plan
+  return isPlanId(plan) ? plan : "trial"
 }
