@@ -23,7 +23,8 @@ export default function BillingStatusCard({
   plansHref = "/plans",
 }: Props) {
   const billingState = getBillingViewState(billing)
-  const planLabel = getPlanLabel(billing?.currentPlan)
+  const isCompanyContract = billingState === "company_contract"
+  const planLabel = isCompanyContract ? "企業契約" : getPlanLabel(billing?.currentPlan)
   const billingDaysLeft = getBillingDaysLeft(billing)
   const billingEndDate = getBillingEndDate(billing)
 
@@ -56,6 +57,7 @@ export default function BillingStatusCard({
           </div>
         </div>
 
+        {!isCompanyContract && (
         <Link
           href={plansHref}
           style={{
@@ -73,6 +75,7 @@ export default function BillingStatusCard({
         >
           プランを見る
         </Link>
+        )}
       </div>
 
       <div
@@ -123,6 +126,13 @@ export default function BillingStatusCard({
             />
           )}
 
+          {billingState === "company_contract" && (
+            <StateBox
+              title="企業契約"
+              description="企業コードで登録されたアカウントです。会社契約により通常学習を利用できます。"
+            />
+          )}
+
           {billingState === "active" && (
             <div
               style={{
@@ -132,7 +142,7 @@ export default function BillingStatusCard({
                 gap: 10,
               }}
             >
-              <InfoBox label="残り日数" value={`${billingDaysLeft}日`} />
+              <InfoBox label="残り日数" value={billingDaysLeft == null ? "期限なし" : `${billingDaysLeft}日`} />
               <InfoBox label="有効期限" value={formatDateJP(billingEndDate)} />
             </div>
           )}
@@ -188,12 +198,14 @@ export default function BillingStatusCard({
               gap: 10,
             }}
           >
-            <InfoBox label="残り日数" value={`${aiDaysLeft}日`} />
+            <InfoBox label="残り日数" value={aiDaysLeft == null ? "企業契約" : `${aiDaysLeft}日`} />
             <InfoBox label="有効期限" value={formatDateJP(aiEndDate)} />
           </div>
         ) : (
           <div style={{ marginTop: 10, fontSize: 13, opacity: 0.75 }}>
-            AI会話は有料オプションです。必要な場合はプラン購入時に追加してください。
+            {isCompanyContract
+              ? "AI会話は企業ごとの契約設定により利用可否を切り替えます。"
+              : "AI会話は有料オプションです。必要な場合はプラン購入時に追加してください。"}
           </div>
         )}
       </div>

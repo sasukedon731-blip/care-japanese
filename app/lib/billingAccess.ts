@@ -1,8 +1,10 @@
 // app/lib/billingAccess.ts
 
 export type BillingLike = Partial<{
+  accountType: "personal" | "company"
+  method: "convenience" | "card" | "bank_transfer" | "company_contract"
   status: "inactive" | "pending" | "active" | "past_due" | "canceled"
-  currentPlan: "trial" | "free" | "3" | "5" | "7"
+  currentPlan: "trial" | "free" | "3" | "5" | "7" | "standard"
   currentPeriodEnd: any
   aiConversationEnabled: boolean
   aiConversationExpiresAt: any
@@ -28,9 +30,20 @@ function toDate(value: any): Date | null {
   return Number.isNaN(d.getTime()) ? null : d
 }
 
+export function isCompanyContractBilling(billing?: BillingLike | null) {
+  if (!billing) return false
+  return (
+    billing.status === "active" &&
+    (billing.accountType === "company" || billing.method === "company_contract")
+  )
+}
+
 export function isBillingActive(billing?: BillingLike | null) {
   if (!billing) return false
   if (billing.status !== "active") return false
+
+  // 企業契約は会社側の契約で利用するため、個人ごとの有効期限は持たせない
+  if (isCompanyContractBilling(billing)) return true
 
   const end = toDate(billing.currentPeriodEnd)
   if (!end) return false
@@ -43,6 +56,9 @@ export function canUseAiConversation(billing?: BillingLike | null) {
   if (!billing.aiConversationEnabled) return false
   if (billing.status !== "active") return false
 
+  // 企業契約のAIは会社単位で切り替える想定。期限は個人には持たせない。
+  if (isCompanyContractBilling(billing)) return true
+
   const end = toDate(billing.aiConversationExpiresAt)
   if (!end) return false
 
@@ -50,6 +66,8 @@ export function canUseAiConversation(billing?: BillingLike | null) {
 }
 
 export function getBillingDaysLeft(billing?: BillingLike | null) {
+  if (isCompanyContractBilling(billing)) return null
+
   const end = toDate(billing?.currentPeriodEnd)
   if (!end) return 0
 
@@ -60,6 +78,8 @@ export function getBillingDaysLeft(billing?: BillingLike | null) {
 }
 
 export function getAiConversationDaysLeft(billing?: BillingLike | null) {
+  if (isCompanyContractBilling(billing) && billing?.aiConversationEnabled) return null
+
   const end = toDate(billing?.aiConversationExpiresAt)
   if (!end) return 0
 
@@ -78,6 +98,7 @@ export function getAiConversationEndDate(billing?: BillingLike | null) {
 }
 
 export function getBillingViewState(billing?: BillingLike | null) {
+  if (isCompanyContractBilling(billing)) return "company_contract" as const
   if (!billing) return "none" as const
   if (billing.status === "inactive") return "none" as const
   if (billing.status === "pending") return "pending" as const
@@ -92,9 +113,10 @@ export function getPlanLabel(plan?: string | null) {
     case "3":
     case "5":
     case "7":
+    case "standard":
       return "Care Japanese App"
     case "trial":
-      return "トライアル"
+      return "1日無料体験"
     case "free":
       return "無料プラン"
     default:

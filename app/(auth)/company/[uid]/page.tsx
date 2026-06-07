@@ -44,7 +44,12 @@ type ProgressDoc = {
   quizType?: string
   completedCount?: number
   totalCount?: number
+  totalSessions?: number
+  todaySessions?: number
+  streak?: number
+  bestStreak?: number
   accuracy?: number
+  lastStudyDate?: string
   lastStudiedAt?: any
   updatedAt?: any
 }
@@ -197,7 +202,7 @@ export default function CompanyLearnerDetailPage() {
 
         const progressRef = collection(db, "users", targetUid, "progress")
         const progressSnap = await getDocs(progressRef)
-        setProgressList(progressSnap.docs.map((d) => d.data() as ProgressDoc))
+        setProgressList(progressSnap.docs.map((d) => ({ quizType: d.id, ...(d.data() as ProgressDoc) })))
 
         const achievementsRef = collection(db, "users", targetUid, "achievements")
         const achievementsSnap = await getDocs(achievementsRef)
@@ -216,7 +221,8 @@ export default function CompanyLearnerDetailPage() {
   }, [router, targetUid])
 
   const summary = useMemo(() => {
-    const studyCount = results.length
+    const normalStudyCount = progressList.reduce((sum, p) => sum + (typeof p.totalSessions === "number" ? p.totalSessions : 0), 0)
+    const studyCount = results.length + normalStudyCount
 
     let totalCorrect = 0
     let totalQuestions = 0
@@ -260,7 +266,9 @@ export default function CompanyLearnerDetailPage() {
               ? new Date(p.lastStudiedAt).getTime()
               : p.updatedAt
                 ? new Date(p.updatedAt).getTime()
-                : 0
+                : typeof p.lastStudyDate === "string"
+                  ? new Date(`${p.lastStudyDate}T00:00:00+09:00`).getTime()
+                  : 0
 
       if (rawDate > latestDateMs) latestDateMs = rawDate
     }
@@ -434,17 +442,17 @@ export default function CompanyLearnerDetailPage() {
                           {formatQuizTypeLabel(item.quizType)}
                         </div>
                         <div className="mt-1 text-sm text-slate-500">
-                          学習数: {item.completedCount ?? 0} / {item.totalCount ?? "—"}
+                          学習回数: {item.totalSessions ?? item.completedCount ?? 0}回 / 今日: {item.todaySessions ?? 0}回
                         </div>
                       </div>
 
                       <div className="text-sm text-slate-600">
-                        正答率: {formatPercent(item.accuracy ?? null)}
+                        連続学習: {item.streak ?? 0}日 / 最高: {item.bestStreak ?? 0}日
                       </div>
                     </div>
 
                     <div className="mt-2 text-xs text-slate-500">
-                      最終学習: {formatDate(item.lastStudiedAt ?? item.updatedAt)}
+                      最終学習: {formatDate(item.lastStudiedAt ?? item.updatedAt ?? item.lastStudyDate)}
                     </div>
                   </div>
                 ))}

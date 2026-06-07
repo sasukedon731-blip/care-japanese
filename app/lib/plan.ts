@@ -1,7 +1,7 @@
 import { quizzes } from "@/app/data/quizzes"
 import type { QuizType } from "@/app/data/types"
 
-export type PlanId = "trial" | "free" | "3" | "5" | "7"
+export type PlanId = "trial" | "free" | "3" | "5" | "7" | "standard"
 export type SelectLimit = number | "ALL"
 
 export function getSelectLimit(_plan: PlanId): SelectLimit {
@@ -22,7 +22,7 @@ export function normalizeSelectedForPlan(
 }
 
 export type BillingStatus = "inactive" | "pending" | "active" | "past_due" | "canceled"
-export type BillingMethod = "convenience" | "card" | "bank_transfer"
+export type BillingMethod = "convenience" | "card" | "bank_transfer" | "company_contract"
 export type AccountType = "personal" | "company"
 
 function toDate(value: any): Date | null {
@@ -46,6 +46,16 @@ export function getBillingStatus(userDoc: any): BillingStatus {
 export function isAccessActive(userDoc: any): boolean {
   const billing = userDoc?.billing
   if (billing?.status !== "active") return false
+
+  if (
+    billing?.accountType === "company" ||
+    billing?.method === "company_contract" ||
+    userDoc?.accountType === "company" ||
+    (typeof userDoc?.companyCode === "string" && userDoc.companyCode.trim())
+  ) {
+    return true
+  }
+
   const end = toDate(billing?.currentPeriodEnd)
   return !!end && end.getTime() > Date.now()
 }

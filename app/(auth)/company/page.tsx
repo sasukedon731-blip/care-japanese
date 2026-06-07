@@ -16,6 +16,7 @@ import {
 import { auth, db } from "@/app/lib/firebase"
 import CompanyHeader from "@/app/components/CompanyHeader"
 import LegalFooter from "@/app/components/LegalFooter"
+import { getQuizDef } from "@/app/data/quizCatalog"
 
 type CompanyDoc = {
   name?: string
@@ -35,11 +36,33 @@ type UserDoc = {
 
 type ResultDoc = {
   score?: number
+  total?: number
   correctCount?: number
   totalQuestions?: number
   accuracy?: number
+  quizType?: string
+  mode?: string
   createdAt?: any
   updatedAt?: any
+}
+
+type ProgressDoc = {
+  quizType?: string
+  totalSessions?: number
+  todaySessions?: number
+  streak?: number
+  bestStreak?: number
+  lastStudyDate?: string
+  lastStudiedAt?: any
+  updatedAt?: any
+}
+
+type QuizSummary = {
+  quizType: string
+  label: string
+  sessions: number
+  averageAccuracy: number | null
+  lastStudiedAt: Date | null
 }
 
 type AchievementDoc = {
@@ -61,6 +84,8 @@ type LearnerRow = {
   averageAccuracy: number | null
   lastStudiedAt: Date | null
   badgeCount: number
+  mainLearning: string
+  quizSummaries: QuizSummary[]
   status: "未学習" | "学習中" | "7日以上未学習"
 }
 
@@ -105,6 +130,77 @@ function getStatus(
 
 function sleep(ms: number) {
   return new Promise((resolve) => window.setTimeout(resolve, ms))
+}
+
+function formatQuizLabel(quizType?: string) {
+  if (!quizType) return "未設定"
+  const def = getQuizDef(quizType)
+  return def?.title ?? quizType
+}
+
+function getResultAccuracy(r: ResultDoc) {
+  if (typeof r.accuracy === "number") return r.accuracy
+  if (typeof r.correctCount === "number" && typeof r.totalQuestions === "number" && r.totalQuestions > 0) {
+    return (r.correctCount / r.totalQuestions) * 100
+  }
+  if (typeof r.score === "number" && typeof r.total === "number" && r.total > 0) {
+    return (r.score / r.total) * 100
+  }
+  return null
+}
+
+function getProgressDate(p: ProgressDoc) {
+  if (p.lastStudiedAt) return parseDateValue(p.lastStudiedAt)
+  if (p.updatedAt) return parseDateValue(p.updatedAt)
+  if (typeof p.lastStudyDate === "string") {
+    const d = new Date(`${p.lastStudyDate}T00:00:00+09:00`)
+    return Number.isNaN(d.getTime()) ? null : d
+  }
+  return null
+}
+
+function buildQuizSummaries(results: ResultDoc[], progresses: ProgressDoc[]) {
+  const map = new Map<string, { sessions: number; accSum: number; accCount: number; latest: Date | null }>()
+
+  function ensure(quizType: string) {
+    const key = quizType || "unknown"
+    if (!map.has(key)) map.set(key, { sessions: 0, accSum: 0, accCount: 0, latest: null })
+    return map.get(key)!
+  }
+
+  for (const p of progresses) {
+    const entry = ensure(p.quizType || "unknown")
+    entry.sessions += typeof p.totalSessions === "number" ? p.totalSessions : 0
+    const d = getProgressDate(p)
+    if (d && (!entry.latest || d.getTime() > entry.latest.getTime())) entry.latest = d
+  }
+
+  for (const r of results) {
+    const entry = ensure(r.quizType || "unknown")
+    entry.sessions += 1
+    const acc = getResultAccuracy(r)
+    if (typeof acc === "number") {
+      entry.accSum += acc
+      entry.accCount += 1
+    }
+    const d = parseDateValue(r.createdAt ?? r.updatedAt)
+    if (d && (!entry.latest || d.getTime() > entry.latest.getTime())) entry.latest = d
+  }
+
+  return Array.from(map.entries())
+    .map(([quizType, v]) => ({
+      quizType,
+      label: formatQuizLabel(quizType),
+      sessions: v.sessions,
+      averageAccuracy: v.accCount > 0 ? v.accSum / v.accCount : null,
+      lastStudiedAt: v.latest,
+    }))
+    .filter((v) => v.sessions > 0 || v.lastStudiedAt)
+    .sort((a, b) => {
+      const at = a.lastStudiedAt ? a.lastStudiedAt.getTime() : 0
+      const bt = b.lastStudiedAt ? b.lastStudiedAt.getTime() : 0
+      return bt - at
+    })
 }
 
 async function getUserDocWithRetry(uid: string, maxRetry = 5) {
@@ -284,6 +380,8 @@ export default function CompanyDashboardPage() {
               averageAccuracy,
               lastStudiedAt,
               badgeCount,
+              mainLearning,
+              quizSummaries,
               status,
             } satisfies LearnerRow
           })
@@ -311,6 +409,49 @@ export default function CompanyDashboardPage() {
     } catch (e) {
       console.error("copy failed:", e)
     }
+  }
+
+
+  function handleDownloadCsv() {
+    const headers = [
+      "氏名",
+      "メール",
+      "状態",
+      "学習回数",
+      "平均正答率",
+      "進行中教材",
+      "教材別状況",
+      "バッジ",
+      "最終学習日",
+    ]
+
+    const escapeCsv = (value: string) => `"${value.replace(/"/g, '""')}"`
+    const lines = filteredRows.map((row) =>
+      [
+        row.displayName,
+        row.email,
+        row.status,
+        String(row.studyCount),
+        formatPercent(row.averageAccuracy),
+        row.mainLearning,
+        row.quizSummaries
+          .map((q) => `${q.label}: ${q.sessions}回 / 平均${formatPercent(q.averageAccuracy)}`)
+          .join(" | "),
+        String(row.badgeCount),
+        formatDate(row.lastStudiedAt),
+      ]
+        .map(escapeCsv)
+        .join(",")
+    )
+
+    const csv = [`\uFEFF${headers.map(escapeCsv).join(",")}`, ...lines].join("\n")
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `care-company-learning-${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
   }
 
   const filteredRows = useMemo(() => {
@@ -363,6 +504,32 @@ export default function CompanyDashboardPage() {
       notStarted,
       averageAccuracy: accuracyCount > 0 ? accuracySum / accuracyCount : null,
     }
+  }, [rows])
+
+
+  const quizSummaryRows = useMemo(() => {
+    const map = new Map<string, { label: string; sessions: number; accSum: number; accCount: number }>()
+    for (const row of rows) {
+      for (const q of row.quizSummaries) {
+        if (!map.has(q.quizType)) {
+          map.set(q.quizType, { label: q.label, sessions: 0, accSum: 0, accCount: 0 })
+        }
+        const entry = map.get(q.quizType)!
+        entry.sessions += q.sessions
+        if (typeof q.averageAccuracy === "number") {
+          entry.accSum += q.averageAccuracy
+          entry.accCount += 1
+        }
+      }
+    }
+
+    return Array.from(map.values())
+      .map((v) => ({
+        label: v.label,
+        sessions: v.sessions,
+        averageAccuracy: v.accCount > 0 ? v.accSum / v.accCount : null,
+      }))
+      .sort((a, b) => b.sessions - a.sessions)
   }, [rows])
 
   const followTargetCount = useMemo(() => {
@@ -565,9 +732,18 @@ export default function CompanyDashboardPage() {
         <section className="mt-6 rounded-3xl border border-slate-200 bg-white shadow-sm">
           <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
             <h2 className="text-lg font-bold text-slate-900">学習者一覧</h2>
-            <span className="text-sm text-slate-500">
-              {filteredRows.length} / {rows.length} 件
-            </span>
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-slate-500">
+                {filteredRows.length} / {rows.length} 件
+              </span>
+              <button
+                type="button"
+                onClick={handleDownloadCsv}
+                className="inline-flex min-h-[40px] items-center rounded-2xl border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700 hover:bg-slate-50"
+              >
+                CSV出力
+              </button>
+            </div>
           </div>
 
           {filteredRows.length === 0 ? (
@@ -586,6 +762,7 @@ export default function CompanyDashboardPage() {
                       <th className="px-5 py-4 font-semibold">状態</th>
                       <th className="px-5 py-4 font-semibold">学習回数</th>
                       <th className="px-5 py-4 font-semibold">平均正答率</th>
+                      <th className="px-5 py-4 font-semibold">進行中教材</th>
                       <th className="px-5 py-4 font-semibold">バッジ</th>
                       <th className="px-5 py-4 font-semibold">最終学習日</th>
                       <th className="px-5 py-4 font-semibold">詳細</th>
@@ -616,6 +793,13 @@ export default function CompanyDashboardPage() {
 
                         <td className="px-5 py-4 font-medium text-slate-900">
                           {formatPercent(row.averageAccuracy)}
+                        </td>
+
+                        <td className="px-5 py-4">
+                          <div className="font-semibold text-slate-900">{row.mainLearning}</div>
+                          <div className="mt-1 text-xs leading-5 text-slate-500">
+                            {row.quizSummaries.slice(0, 2).map((q) => `${q.label} ${q.sessions}回`).join(" / ") || "—"}
+                          </div>
                         </td>
 
                         <td className="px-5 py-4 font-medium text-slate-900">
@@ -669,6 +853,7 @@ export default function CompanyDashboardPage() {
                         label="平均正答率"
                         value={formatPercent(row.averageAccuracy)}
                       />
+                      <MobileStat label="進行中教材" value={row.mainLearning} />
                       <MobileStat label="バッジ" value={`${row.badgeCount}`} />
                       <MobileStat label="最終学習日" value={formatDate(row.lastStudiedAt)} />
                     </div>
@@ -683,6 +868,29 @@ export default function CompanyDashboardPage() {
                 ))}
               </div>
             </>
+          )}
+        </section>
+
+        <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-bold text-slate-900">教材別の学習状況</h2>
+            <span className="text-sm text-slate-500">どの教材を進めているか確認できます</span>
+          </div>
+
+          {quizSummaryRows.length === 0 ? (
+            <p className="text-sm text-slate-500">まだ教材別の進捗はありません。</p>
+          ) : (
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {quizSummaryRows.map((item) => (
+                <div key={item.label} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="font-bold text-slate-900">{item.label}</div>
+                  <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
+                    <MobileStat label="学習回数" value={`${item.sessions}回`} />
+                    <MobileStat label="平均正答率" value={formatPercent(item.averageAccuracy)} />
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </section>
 

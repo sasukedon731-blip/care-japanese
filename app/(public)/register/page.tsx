@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth"
-import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore"
+import { doc, getDoc, setDoc, serverTimestamp, Timestamp } from "firebase/firestore"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 
@@ -80,7 +80,11 @@ export default function RegisterPage() {
       const uid = userCredential.user.uid
       const isCompanyUser = !!trimmedCompanyCode
 
+      const trialEnd = new Date()
+      trialEnd.setDate(trialEnd.getDate() + 1)
+
       await setDoc(doc(db, "users", uid), {
+        uid,
         email: userCredential.user.email ?? trimmedEmail,
         displayName: trimmedName,
 
@@ -90,6 +94,19 @@ export default function RegisterPage() {
         companyCode: isCompanyUser ? trimmedCompanyCode : null,
         companyName: isCompanyUser ? companyName : null,
 
+        plan: isCompanyUser ? "standard" : "trial",
+        trialEndsAt: isCompanyUser ? null : Timestamp.fromDate(trialEnd),
+        billing: {
+          accountType: isCompanyUser ? "company" : "personal",
+          method: isCompanyUser ? "company_contract" : "convenience",
+          status: isCompanyUser ? "active" : "active",
+          currentPlan: isCompanyUser ? "standard" : "trial",
+          currentPeriodEnd: isCompanyUser ? null : Timestamp.fromDate(trialEnd),
+          aiConversationEnabled: isCompanyUser,
+          aiConversationExpiresAt: isCompanyUser ? null : null,
+        },
+
+        selectedQuizTypes: [],
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       })
