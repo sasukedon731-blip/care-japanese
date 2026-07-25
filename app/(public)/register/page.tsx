@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth"
+import { FirebaseError } from "firebase/app"
+import { createUserWithEmailAndPassword, deleteUser, updateProfile, type User } from "firebase/auth"
 import { doc, getDoc, setDoc, serverTimestamp, Timestamp } from "firebase/firestore"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
@@ -44,36 +45,27 @@ export default function RegisterPage() {
       return
     }
 
+    let createdUser: User | null = null
     try {
       let companyName: string | null = null
-
-      if (trimmedCompanyCode) {
-        const companyRef = doc(db, "companies", trimmedCompanyCode)
-        const companySnap = await getDoc(companyRef)
-
-        if (!companySnap.exists()) {
-          setError("企業コードが正しくありません")
-          setLoading(false)
-          return
-        }
-
-        const companyData = companySnap.data()
-        if (companyData?.status && companyData.status !== "active") {
-          setError("この企業コードは現在利用できません")
-          setLoading(false)
-          return
-        }
-
-        companyName = companyData?.name ?? null
-      }
-
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         trimmedEmail,
         password
       )
+      createdUser = userCredential.user
 
       await userCredential.user.getIdToken(true)
+
+      if (trimmedCompanyCode) {
+        const companySnap = await getDoc(doc(db, "companies", trimmedCompanyCode))
+        if (!companySnap.exists()) throw new Error("企業コードが正しくありません")
+        const companyData = companySnap.data()
+        if (companyData?.status && companyData.status !== "active") {
+          throw new Error("この企業コードは現在利用できません")
+        }
+        companyName = companyData?.name ?? null
+      }
 
       await updateProfile(userCredential.user, { displayName: trimmedName })
 
@@ -110,11 +102,15 @@ export default function RegisterPage() {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       })
+      createdUser = null
 
       router.push("/home")
-    } catch (err: any) {
+    } catch (err: unknown) {
+      if (createdUser) {
+        try { await deleteUser(createdUser) } catch (cleanupError) { console.error("Failed to roll back Auth user", cleanupError) }
+      }
       console.error(err)
-      const code = err?.code ?? ""
+      const code = err instanceof FirebaseError ? err.code : ""
 
       if (code === "auth/email-already-in-use") {
         setError("このメールアドレスは既に登録されています")

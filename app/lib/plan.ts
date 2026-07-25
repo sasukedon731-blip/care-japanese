@@ -1,8 +1,16 @@
+
+
+
+
 import { quizzes } from "@/app/data/quizzes"
 import type { QuizType } from "@/app/data/types"
 
 export type PlanId = "trial" | "free" | "3" | "5" | "7" | "standard"
 export type SelectLimit = number | "ALL"
+
+function isPlanId(value: unknown): value is PlanId {
+  return value === "trial" || value === "free" || value === "3" || value === "5" || value === "7" || value === "standard"
+}
 
 export function getSelectLimit(_plan: PlanId): SelectLimit {
   return "ALL"

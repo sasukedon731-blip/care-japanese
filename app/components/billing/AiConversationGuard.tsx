@@ -1,3 +1,4 @@
+
 "use client"
 
 import Link from "next/link"
@@ -66,7 +67,7 @@ export default function AiConversationGuard({
       description="AI会話はプラン購入時のオプション追加で利用できます。"
       plansHref={plansHref}
       buttonLabel="プランを見る"
-      footerNote={aiDaysLeft > 0 ? `残り ${aiDaysLeft} 日` : undefined}
+      footerNote={aiDaysLeft != null && aiDaysLeft > 0 ? `残り ${aiDaysLeft} 日` : undefined}
     />
   )
 }
