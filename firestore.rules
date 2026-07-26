@@ -1,0 +1,184 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function userExists(uid) {
+      return signedIn() && exists(/databases/$(database)/documents/users/$(uid));
+    }
+
+    function userDoc(uid) {
+      return get(/databases/$(database)/documents/users/$(uid));
+    }
+
+    function myRole() {
+      return userExists(request.auth.uid) ? userDoc(request.auth.uid).data.role : null;
+    }
+
+    function isAdmin() {
+      return myRole() == "admin";
+    }
+
+    function isCompanyAdmin() {
+      return myRole() == "company_admin";
+    }
+
+    function myCompanyCode() {
+      return userExists(request.auth.uid) && userDoc(request.auth.uid).data.companyCode is string
+        ? userDoc(request.auth.uid).data.companyCode
+        : null;
+    }
+
+    function sameCompany(uid) {
+      return isCompanyAdmin()
+        && userExists(uid)
+        && myCompanyCode() != null
+        && userDoc(uid).data.companyCode == myCompanyCode();
+    }
+
+    function protectedUserFields() {
+      return [
+        "uid",
+        "role",
+        "companyCode",
+        "companyId",
+        "companyName",
+        "accountType",
+        "billing",
+        "createdAt"
+      ];
+    }
+
+    function safeSelfCreate(uid) {
+      return signedIn()
+        && request.auth.uid == uid
+        && (
+          !request.resource.data.keys().hasAny(["role"])
+          || request.resource.data.role == "user"
+          || request.resource.data.role == "learner"
+        )
+        && (
+          !request.resource.data.keys().hasAny(["companyCode"])
+          || request.resource.data.companyCode == null
+          || (
+            request.resource.data.companyCode is string
+            && exists(/databases/$(database)/documents/companies/$(request.resource.data.companyCode))
+          )
+        );
+    }
+
+    function safeSelfUpdate() {
+      let changed = request.resource.data.diff(resource.data).affectedKeys();
+      return (
+          !changed.hasAny(["uid"])
+          || (
+            !resource.data.keys().hasAny(["uid"])
+            && request.resource.data.uid == request.auth.uid
+          )
+        )
+        && (
+          !changed.hasAny(["role"])
+          || (
+            !resource.data.keys().hasAny(["role"])
+            && (request.resource.data.role == "user" || request.resource.data.role == "learner")
+          )
+        )
+        && (
+          !changed.hasAny(["companyCode"])
+          || (
+            !resource.data.keys().hasAny(["companyCode"])
+            && request.resource.data.companyCode == null
+          )
+        )
+        && (
+          !changed.hasAny(["companyId"])
+          || (
+            !resource.data.keys().hasAny(["companyId"])
+            && request.resource.data.companyId == null
+          )
+        )
+        && (
+          !changed.hasAny(["companyName"])
+          || (
+            !resource.data.keys().hasAny(["companyName"])
+            && request.resource.data.companyName == null
+          )
+        )
+        && (
+          !changed.hasAny(["accountType"])
+          || (
+            !resource.data.keys().hasAny(["accountType"])
+            && request.resource.data.accountType == "personal"
+          )
+        )
+        && (
+          !changed.hasAny(["billing"])
+          || (
+            !resource.data.keys().hasAny(["billing"])
+            && request.resource.data.billing.accountType == "personal"
+            && (
+              request.resource.data.billing.status == "inactive"
+              || request.resource.data.billing.status == "trialing"
+            )
+          )
+        )
+        && !changed.hasAny(["createdAt"]);
+    }
+
+    match /users/{uid} {
+      allow get: if signedIn() && (request.auth.uid == uid || isAdmin() || sameCompany(uid));
+      allow list: if signedIn() && (isAdmin() || (isCompanyAdmin() && resource.data.companyCode == myCompanyCode()));
+      allow create: if safeSelfCreate(uid);
+      allow update: if signedIn() && (isAdmin() || (request.auth.uid == uid && safeSelfUpdate()));
+      allow delete: if isAdmin();
+
+      match /results/{resultId} {
+        allow read: if signedIn() && (request.auth.uid == uid || isAdmin() || sameCompany(uid));
+        allow create: if signedIn() && request.auth.uid == uid;
+        allow update, delete: if isAdmin();
+      }
+
+      match /progress/{progressId} {
+        allow read: if signedIn() && (request.auth.uid == uid || isAdmin() || sameCompany(uid));
+        allow create, update: if signedIn() && request.auth.uid == uid;
+        allow delete: if signedIn() && (request.auth.uid == uid || isAdmin());
+      }
+
+      match /achievements/{achievementId} {
+        allow read: if signedIn() && (request.auth.uid == uid || isAdmin() || sameCompany(uid));
+        allow create, update, delete: if signedIn() && request.auth.uid == uid;
+      }
+
+      match /{otherCollection}/{documentId} {
+        allow read, write: if signedIn() && request.auth.uid == uid;
+      }
+    }
+
+    match /companies/{companyCode} {
+      allow get: if signedIn() && (
+        isAdmin()
+        || (isCompanyAdmin() && companyCode == myCompanyCode())
+        || (
+          !resource.data.keys().hasAny(["active", "status", "inviteEnabled"])
+          || resource.data.active == true
+          || resource.data.status == "active"
+          || resource.data.inviteEnabled == true
+        )
+      );
+      allow list: if isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /paymentOrders/{orderId} {
+      allow read, write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if isAdmin();
+    }
+  }
+}
