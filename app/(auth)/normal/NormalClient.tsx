@@ -10,6 +10,7 @@ import QuestionImage from '@/app/components/QuestionImage'
 import type { Quiz, QuizType, Question } from '@/app/data/types'
 import { migrateN3QuestionStorage } from '@/app/lib/n3QuestionMigration'
 import { buildN2QuizContentSignature, migrateN2QuestionStorage } from '@/app/lib/n2QuestionMigration'
+import { buildCareWorkerExamContentSignature, migrateCareWorkerExamQuestionStorage } from '@/app/lib/careWorkerExamQuestionMigration'
 import { formatCorrectAnswerLabels, getCorrectIndexes, isCorrectSelection, isMultiAnswerQuestion, isSelectionComplete, requiredAnswerCount, shuffleQuestionChoices as shuffleQuestionChoicesWithAnswers, stripLeadingAnswerLabel } from '@/app/lib/questionAnswer'
 
 import { useAuth } from '@/app/lib/useAuth'
@@ -216,9 +217,13 @@ export default function NormalClient({ quiz }: Props) {
   const progressKey = `${STORAGE_PROGRESS_KEY}-${quizType}`
   const sessionKey = `${STORAGE_NORMAL_SESSION_KEY}-${quizType}`
   const sectionKey = `${STORAGE_NORMAL_SECTION_PREFIX}-${quizType}`
-  const n2ContentSig = quizType === 'japanese-n2' ? buildN2QuizContentSignature(quizType, quiz.questions) : undefined
+  const contentSig = quizType === 'japanese-n2'
+    ? buildN2QuizContentSignature(quizType, quiz.questions)
+    : quizType === 'care-worker-exam'
+      ? buildCareWorkerExamContentSignature(quizType, quiz.questions)
+      : undefined
 
-  useEffect(() => { migrateN3QuestionStorage(); migrateN2QuestionStorage() }, [quizType])
+  useEffect(() => { migrateN3QuestionStorage(); migrateN2QuestionStorage(); migrateCareWorkerExamQuestionStorage() }, [quizType])
 
   const goModeSelect = () => {
     router.push(`/select-mode?type=${quizType}`)
@@ -277,7 +282,7 @@ export default function NormalClient({ quiz }: Props) {
       setCorrectCount(0)
       setFinished(false)
 
-      const session: NormalSession = { questions: built, sectionId, ...(n2ContentSig ? { meta: { contentSig: n2ContentSig } } : {}) }
+      const session: NormalSession = { questions: built, sectionId, ...(contentSig ? { meta: { contentSig } } : {}) }
       localStorage.setItem(sessionKey, JSON.stringify(session))
       localStorage.removeItem(progressKey)
       return
@@ -291,7 +296,7 @@ export default function NormalClient({ quiz }: Props) {
     if (savedSessionRaw) {
       try {
         const d = JSON.parse(savedSessionRaw) as NormalSession
-        const signatureMatches = quizType !== 'japanese-n2' || d.meta?.contentSig === n2ContentSig
+        const signatureMatches = !contentSig || d.meta?.contentSig === contentSig
         if (signatureMatches && Array.isArray(d.questions) && d.questions.length > 0) loadedQuestions = d.questions
         loadedSectionId = (d.sectionId ?? null) as any
       } catch {}
@@ -317,7 +322,7 @@ export default function NormalClient({ quiz }: Props) {
       setCorrect(false)
       setCorrectCount(0)
       setFinished(false)
-      localStorage.setItem(sessionKey, JSON.stringify({ questions: built, sectionId, ...(n2ContentSig ? { meta: { contentSig: n2ContentSig } } : {}) }))
+      localStorage.setItem(sessionKey, JSON.stringify({ questions: built, sectionId, ...(contentSig ? { meta: { contentSig } } : {}) }))
       localStorage.removeItem(progressKey)
       return
     }
