@@ -2,6 +2,7 @@ import type { Question, QuizType } from '../data/types'
 import { careWorkerExamQuiz } from '../data/quizzes/care-worker-exam'
 
 const VERSION_KEY = 'care-worker-exam-question-content-migration-v1'
+const VERSION_KEY_V2 = 'care-worker-exam-question-content-migration-v2'
 const STORAGE_KEYS = ['wrong-care-worker-exam', 'normal-session-care-worker-exam', 'exam-session-care-worker-exam'] as const
 const legacy = [
   { id: 85, question: '日本の将来推計において、2040年頃に高齢者1人を現役世代何人で支えることになると予測されているか。', choices: ['約10人', '約5人', '約', '5人', '約0.5人', '誰も支えない'], correctIndex: 2, sectionId: 'society' },
@@ -11,26 +12,48 @@ const legacy = [
   { id: 513, question: '呼吸、心拍、体温調節など、生命維持に直結する自律神経の中枢がある部分はどこか。', choices: ['大脳皮質', '脳幹', '海馬', '側頭葉', '後頭葉'], correctIndex: 1, sectionId: 'body-mind' },
 ] as const
 
+export const phase45LegacyCareWorkerQuestions = [
+  { id: 56, question: '生活に困窮するすべての国民に対し、最低限度の生活を保障する制度を何というか。', choices: ['生活保護制度', '児童手当制度', '障害年金制度', '住宅手当制度', '奨学金制度'], correctIndex: 0, sectionId: 'society', explanation: '日本国憲法第25条（生存権）に基づいた、最後のセーフティネットです。' },
+  { id: 63, question: '1947年に制定され、日本の福祉の出発点となった「福祉三法」に含まれないものはどれか。', choices: ['児童福祉法', '身体障害者福祉法', '旧生活保護法', '介護保険法', 'すべて含まれる'], correctIndex: 3, sectionId: 'society', explanation: '介護保険法は2000年施行。戦後すぐの三法（児童・身障・生保）とは時代が違います。' },
+  { id: 70, question: '現在の日本の高齢化率（総人口に占める65歳以上の割合）に最も近いものはどれか。', choices: ['約10％', '約20％', '約30％', '約50％', '約70％'], correctIndex: 2, sectionId: 'society', explanation: '日本は世界一の「超高齢社会」。約3.5人に1人が高齢者という計算です。' },
+  { id: 71, question: '日本の公的年金制度のうち、20歳以上のすべての国民が加入する「1階部分」にあたる年金はどれか。', choices: ['厚生年金', '確定拠出年金', '国民年金（基礎年金）', '企業年金', '個人年金'], correctIndex: 2, sectionId: 'society', explanation: '日本の年金は「2階建て」構造。1階の「国民年金」は全員共通の土台です。' },
+  { id: 73, question: '75歳以上の人が全員加入し、都道府県ごとの広域連合が運営する医療保険制度を何というか。', choices: ['国民健康保険', '組合健保', '後期高齢者医療制度', '共済組合', '介護保険'], correctIndex: 2, sectionId: 'society', explanation: '75歳（または一定の障害がある65歳）からは、この独立した制度に切り替わります。' },
+  { id: 74, question: '現役世代が加入する医療保険において、窓口で支払う自己負担割合は原則何割か。', choices: ['1割', '2割', '3割', '5割', '10割（全額）'], correctIndex: 2, sectionId: 'society', explanation: '介護保険（原則1割）と混同しないように！医療は現役なら3割負担が基本です。' },
+  { id: 128, question: '介護保険サービスを提供した事業所が、その対価として受け取る報酬を何というか。', choices: ['運営交付金', '介護報酬', '医療診療報酬', '社会福祉手当', '施設利用料'], correctIndex: 1, sectionId: 'care-basic', explanation: '3年に一度、料金（報酬）の見直しが行われるのが試験に出やすいます。' },
+  { id: 147, question: '介護計画（ケアプラン）における「長期目標」の設定期間として、一般的に適切なのはどれか。', choices: ['1週間以内', '半年〜1年程度', '10年以上', '毎日更新する', '期間は決めない'], correctIndex: 1, sectionId: 'care-basic', explanation: '最終的なゴールが長期目標、そのためのステップが短期目標（数ヶ月）です。' },
+  { id: 160, question: '介護職の表情や視線、声のトーンが利用者に与える影響を説明した法則はどれか。', choices: ['ハインリッヒの法則', 'メラビアンの法則', '鏡の法則', 'アルキメデスの原理', 'メンデルの法則'], correctIndex: 1, sectionId: 'communication', explanation: '視覚・聴覚情報が印象の9割以上を決める。笑顔と優しい声が最強の武器です！' },
+  { id: 325, question: '介護計画の「長期目標」を設定する際、意識すべき期間は一般的にどれくらいか。', choices: ['1週間以内', '3日以内', '半年から1年程度（目指すべき将来像）', '100年後', '明日の朝まで'], correctIndex: 2, sectionId: 'care-process', explanation: '長期目標は「どんな生活を送りたいか」という大きなゴールを設定するのです。' },
+  { id: 399, question: '高齢者のうち、75歳から84歳までの年齢区分を一般的に何というか。', choices: ['前期高齢者', '中期高齢者', '後期高齢者', '超高齢者', '青年期'], correctIndex: 2, sectionId: 'aging', explanation: '65～74歳が前期、75歳以上が後期高齢者と区分されます。' },
+  { id: 412, question: '日本人の認知症の中で最も多く、全体の約7割近くを占めるタイプはどれか。', choices: ['血管性認知症', 'レビー小体型認知症', 'アルツハイマー型認知症', '前頭側頭型認知症', '混合型認知症'], correctIndex: 2, sectionId: 'dementia', explanation: '脳にアミロイドβなどのタンパク質が蓄積し、脳が萎縮していくのが特徴です。' },
+  { id: 452, question: '認知症の人が地域で自分らしく暮らし続けられる社会を目指す考え方を何というか。', choices: ['隔離', '予防', '共生', '排除', '同化'], correctIndex: 2, sectionId: 'dementia', explanation: '「予防」と「共生」は、現在の日本の認知症施策推進大綱の2大柱です。' },
+  { id: 499, question: '障害者総合支援法における、利用者の費用負担の基本的な考え方はどれか。', choices: ['応能負担（所得に応じた負担）', '応益負担（一律1割負担）', '完全無料', '全額自己負担', '年齢別負担'], correctIndex: 0, sectionId: 'disability', explanation: 'サービスを利用した量ではなく、その人の「支払う能力（所得）」に応じて上限額が決まる仕組みです。' },
+  { id: 551, question: '介護福祉士が一定の条件の下で喀痰吸引等を行うことができると定めた法律はどれか。', choices: ['医師法', '介護保険法', '社会福祉士及び介護福祉士法', '医療法', '老人福祉法'], correctIndex: 2, sectionId: 'medical-care', explanation: '2011年の法改正により、実地研修を修了した介護福祉士に認められるようになりました。' },
+  { id: 589, question: '【事例 7】 Gさん（45歳、男性）は、交通事故で頸髄を損傷し、四肢麻痺となった。現在は電動車椅子を使用し、就労への意欲を持っている。\nGさんが職場で車椅子を使いやすくするために、段差をなくすなどの配慮を求めることを何というか。', choices: ['贅沢な要求', '合理的配慮の提供', '特別待遇', '職務放棄', '自己負担'], correctIndex: 1, sectionId: 'medical-care', explanation: '障害者差別解消法に基づき、事業者に義務付けられている大切な配慮です。' },
+] as const
+
 const canonical = new Map(careWorkerExamQuiz.questions.map((question) => [Number(question.id), question]))
 type StorageLike = Pick<Storage, 'getItem' | 'setItem'>
 const same = (left: unknown, right: unknown) => JSON.stringify(left) === JSON.stringify(right)
 
-function isLegacyQuestion(value: unknown, item: (typeof legacy)[number]): value is Question {
+type LegacyQuestion = (typeof legacy)[number] | (typeof phase45LegacyCareWorkerQuestions)[number]
+
+function isLegacyQuestion(value: unknown, item: LegacyQuestion): value is Question {
   if (!value || typeof value !== 'object') return false
   const question = value as Partial<Question>
-  return Number(question.id) === item.id && question.question === item.question && same(question.choices, item.choices) && question.correctIndex === item.correctIndex && question.sectionId === item.sectionId
+  const explanationMatches = !('explanation' in item) || question.explanation === item.explanation
+  return Number(question.id) === item.id && question.question === item.question && same(question.choices, item.choices) && question.correctIndex === item.correctIndex && question.sectionId === item.sectionId && explanationMatches
 }
 
-function migrateQuestion(value: unknown): unknown {
-  const item = legacy.find((candidate) => isLegacyQuestion(value, candidate))
+function migrateQuestion(value: unknown, candidates: readonly LegacyQuestion[]): unknown {
+  const item = candidates.find((candidate) => isLegacyQuestion(value, candidate))
   if (!item || !value || typeof value !== 'object') return value
   const current = canonical.get(item.id)
   return current ? { ...(value as Record<string, unknown>), ...current } : value
 }
 
-function migrateArray(values: unknown[]): unknown[] {
+function migrateArray(values: unknown[], candidates: readonly LegacyQuestion[]): unknown[] {
   const seen = new Set<string>()
-  return values.map(migrateQuestion).filter((value) => {
+  return values.map((value) => migrateQuestion(value, candidates)).filter((value) => {
     if (!value || typeof value !== 'object' || !('id' in value)) return true
     const question = value as Partial<Question>
     const key = JSON.stringify([question.id, question.question, question.choices, question.correctIndex, question.sectionId])
@@ -40,11 +63,11 @@ function migrateArray(values: unknown[]): unknown[] {
   })
 }
 
-export function migrateCareWorkerExamStoredValue(value: unknown): unknown {
-  if (Array.isArray(value)) return migrateArray(value)
+export function migrateCareWorkerExamStoredValue(value: unknown, candidates: readonly LegacyQuestion[] = [...legacy, ...phase45LegacyCareWorkerQuestions]): unknown {
+  if (Array.isArray(value)) return migrateArray(value, candidates)
   if (!value || typeof value !== 'object') return value
   const record = { ...(value as Record<string, unknown>) }
-  if (Array.isArray(record.questions)) record.questions = migrateArray(record.questions)
+  if (Array.isArray(record.questions)) record.questions = migrateArray(record.questions, candidates)
   return record
 }
 
@@ -53,26 +76,29 @@ export function migrateCareWorkerExamQuestionStorage(storage?: StorageLike): voi
     if (typeof window === 'undefined') return
     storage = window.localStorage
   }
-  try {
-    if (storage.getItem(VERSION_KEY) === '1') return
-  } catch {
-    return
-  }
-  for (const key of STORAGE_KEYS) {
+  const migrations = [[VERSION_KEY, legacy], [VERSION_KEY_V2, phase45LegacyCareWorkerQuestions]] as const
+  for (const [versionKey, candidates] of migrations) {
     try {
-      const raw = storage.getItem(key)
-      if (!raw) continue
-      const parsed = JSON.parse(raw)
-      const migrated = migrateCareWorkerExamStoredValue(parsed)
-      if (!same(parsed, migrated)) storage.setItem(key, JSON.stringify(migrated))
+      if (storage.getItem(versionKey) === '1') continue
     } catch {
-      // Invalid or inaccessible storage is left untouched.
+      return
     }
-  }
-  try {
-    storage.setItem(VERSION_KEY, '1')
-  } catch {
-    // The app remains usable without persistence.
+    for (const key of STORAGE_KEYS) {
+      try {
+        const raw = storage.getItem(key)
+        if (!raw) continue
+        const parsed = JSON.parse(raw)
+        const migrated = migrateCareWorkerExamStoredValue(parsed, candidates)
+        if (!same(parsed, migrated)) storage.setItem(key, JSON.stringify(migrated))
+      } catch {
+        // Invalid or inaccessible storage is left untouched.
+      }
+    }
+    try {
+      storage.setItem(versionKey, '1')
+    } catch {
+      // The app remains usable without persistence.
+    }
   }
 }
 
