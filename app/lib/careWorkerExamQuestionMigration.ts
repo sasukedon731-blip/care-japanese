@@ -3,6 +3,7 @@ import { careWorkerExamQuiz } from '../data/quizzes/care-worker-exam'
 
 const VERSION_KEY = 'care-worker-exam-question-content-migration-v1'
 const VERSION_KEY_V2 = 'care-worker-exam-question-content-migration-v2'
+const VERSION_KEY_V3 = 'care-worker-exam-question-content-migration-v3'
 const STORAGE_KEYS = ['wrong-care-worker-exam', 'normal-session-care-worker-exam', 'exam-session-care-worker-exam'] as const
 const legacy = [
   { id: 85, question: '日本の将来推計において、2040年頃に高齢者1人を現役世代何人で支えることになると予測されているか。', choices: ['約10人', '約5人', '約', '5人', '約0.5人', '誰も支えない'], correctIndex: 2, sectionId: 'society' },
@@ -31,11 +32,24 @@ export const phase45LegacyCareWorkerQuestions = [
   { id: 589, question: '【事例 7】 Gさん（45歳、男性）は、交通事故で頸髄を損傷し、四肢麻痺となった。現在は電動車椅子を使用し、就労への意欲を持っている。\nGさんが職場で車椅子を使いやすくするために、段差をなくすなどの配慮を求めることを何というか。', choices: ['贅沢な要求', '合理的配慮の提供', '特別待遇', '職務放棄', '自己負担'], correctIndex: 1, sectionId: 'medical-care', explanation: '障害者差別解消法に基づき、事業者に義務付けられている大切な配慮です。' },
 ] as const
 
+export const phase49LegacyCareWorkerQuestions = [
+  { id: 245, question: '食事中に利用者が喉に物を詰まらせ、声が出せなくなった。最初に行うべき救急処置はどれか。', choices: ['水を飲ませる', '背部叩打法（背中を強く叩く）を試みる', '寝かせて心臓マッサージをする', 'お腹をマッサージする', '歌を歌って落ち着かせる'], correctIndex: 1, sectionId: 'life-support', explanation: '窒息は1分1秒を争う。異物除去が最優先です！（腹部突き上げ法も有効）。' },
+  { id: 246, question: '意識も呼吸もない利用者を発見した。胸骨圧迫（心臓マッサージ）を行う際の深さとテンポはどれか。', choices: ['1cm沈む程度、ゆっくり', '5cm以上沈む強さで、1分間に100〜120回のテンポ', '指先で軽く押さえる程度', 'お腹を強く押す', '背中をさする'], correctIndex: 1, sectionId: 'life-support', explanation: '「強く、速く、絶え間なく」。救急車が来るまで続けるのが鉄則です！' },
+  { id: 289, question: '片麻痺がある方が食事をする際、麻痺側に麻痺側をサポートするクッションを入れる目的は。', choices: ['見た目を良くするため', '姿勢を安定させ、飲み込みやすくするため', 'クッションを汚すため', '介護職の腕を休めるため', '眠らせるため'], correctIndex: 1, sectionId: 'life-support', explanation: '姿勢が崩れると誤嚥しやすくなる。体幹を真っ直ぐ保つためのサポートです。' },
+  { id: 369, question: '高齢者が脱水になりやすい理由として、適切なものはどれか。', choices: ['体内の水分含有率が増加するから', '喉の渇きを感じる「渇中枢」の機能が低下するから', '汗をかきやすくなるから', '腎臓での水分再吸収が増えるから', '食事量が増えるから'], correctIndex: 1, sectionId: 'aging', explanation: '喉が渇いていないと思っていても、実際には水分が不足しているケースが多いです。' },
+  { id: 388, question: '眼圧が上昇し、視野が欠けていく疾患はどれか。', choices: ['白内障', '緑内障', '飛蚊症', '老眼', '遠視'], correctIndex: 1, sectionId: 'aging', explanation: '放置すると失明の恐れがあるため、早期発見と点眼薬などによる眼圧管理が重要です。' },
+  { id: 429, question: '認知症の中核症状について、正しい説明はどれか。', choices: ['薬で完全に治る', '脳の細胞が壊れることで、誰にでも必ず現れる直接的な症状', '体調が良い時は消失する', '周囲の関わり方次第でなくなる', '認知症の末期にだけ現れる'], correctIndex: 1, sectionId: 'dementia', explanation: '脳のダメージが原因のため、程度の差はあれど認知症の方に共通して見られる症状です。' },
+  { id: 444, question: '65歳未満で発症する「若年性認知症」の方や家族を支援するため、都道府県等に配置されている専門職は。', choices: ['警察官', '若年性認知症支援員', '児童相談員', '職業安定所の職員', '弁護士'], correctIndex: 1, sectionId: 'dementia', explanation: '就労継続や経済的支援など、若年性特有の悩みにワンストップで対応する専門家です。' },
+  { id: 492, question: '障害者総合支援法において、新たに支援の対象（障害者の定義）に加えられたのはどれか。', choices: ['身体障害', '知的障害', '精神障害', '難病（一定の基準を満たすもの）', '認知症'], correctIndex: 3, sectionId: 'disability', explanation: '治療法が確立していない難病の方々も、必要な福祉サービスを受けられるようになりました。' },
+  { id: 542, question: '眼圧が上昇し、視野が外側から欠けていく（狭くなる）疾患を何というか。', choices: ['白内障', '緑内障', '老眼', '近視', '飛蚊症'], correctIndex: 1, sectionId: 'body-mind', explanation: '放置すると失明の恐れがある。早期発見と点眼薬による眼圧コントロールが命です。' },
+  { id: 582, question: '【事例 5】 Eさん（88歳、女性、要介護5）は、特別養護老人ホームに入所中。インフルエンザが施設内で流行しており、Eさんも高熱と咳が出始めた。\nEさんの介助にあたるとき、介護職が徹底すべき「標準予防策（スタンダード・プリコーション）」はどれか。', choices: ['手洗いと手指消毒、使い捨て手袋・マスクの着用', '部屋の鍵をかける', 'Eさんと話さないようにする', '窓をすべて閉め切る', '薬を多めに飲ませる'], correctIndex: 0, sectionId: 'medical-care', explanation: '「すべての体液・排出物は感染の恐れがある」として扱う、感染防止の鉄則です。' },
+] as const
+
 const canonical = new Map(careWorkerExamQuiz.questions.map((question) => [Number(question.id), question]))
 type StorageLike = Pick<Storage, 'getItem' | 'setItem'>
 const same = (left: unknown, right: unknown) => JSON.stringify(left) === JSON.stringify(right)
 
-type LegacyQuestion = (typeof legacy)[number] | (typeof phase45LegacyCareWorkerQuestions)[number]
+type LegacyQuestion = (typeof legacy)[number] | (typeof phase45LegacyCareWorkerQuestions)[number] | (typeof phase49LegacyCareWorkerQuestions)[number]
 
 function isLegacyQuestion(value: unknown, item: LegacyQuestion): value is Question {
   if (!value || typeof value !== 'object') return false
@@ -63,7 +77,7 @@ function migrateArray(values: unknown[], candidates: readonly LegacyQuestion[]):
   })
 }
 
-export function migrateCareWorkerExamStoredValue(value: unknown, candidates: readonly LegacyQuestion[] = [...legacy, ...phase45LegacyCareWorkerQuestions]): unknown {
+export function migrateCareWorkerExamStoredValue(value: unknown, candidates: readonly LegacyQuestion[] = [...legacy, ...phase45LegacyCareWorkerQuestions, ...phase49LegacyCareWorkerQuestions]): unknown {
   if (Array.isArray(value)) return migrateArray(value, candidates)
   if (!value || typeof value !== 'object') return value
   const record = { ...(value as Record<string, unknown>) }
@@ -76,7 +90,7 @@ export function migrateCareWorkerExamQuestionStorage(storage?: StorageLike): voi
     if (typeof window === 'undefined') return
     storage = window.localStorage
   }
-  const migrations = [[VERSION_KEY, legacy], [VERSION_KEY_V2, phase45LegacyCareWorkerQuestions]] as const
+  const migrations = [[VERSION_KEY, legacy], [VERSION_KEY_V2, phase45LegacyCareWorkerQuestions], [VERSION_KEY_V3, phase49LegacyCareWorkerQuestions]] as const
   for (const [versionKey, candidates] of migrations) {
     try {
       if (storage.getItem(versionKey) === '1') continue
