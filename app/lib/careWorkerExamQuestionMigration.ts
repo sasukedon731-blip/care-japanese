@@ -4,6 +4,7 @@ import { careWorkerExamQuiz } from '../data/quizzes/care-worker-exam'
 const VERSION_KEY = 'care-worker-exam-question-content-migration-v1'
 const VERSION_KEY_V2 = 'care-worker-exam-question-content-migration-v2'
 const VERSION_KEY_V3 = 'care-worker-exam-question-content-migration-v3'
+const VERSION_KEY_V4 = 'care-worker-exam-question-content-migration-v4'
 const STORAGE_KEYS = ['wrong-care-worker-exam', 'normal-session-care-worker-exam', 'exam-session-care-worker-exam'] as const
 const legacy = [
   { id: 85, question: '日本の将来推計において、2040年頃に高齢者1人を現役世代何人で支えることになると予測されているか。', choices: ['約10人', '約5人', '約', '5人', '約0.5人', '誰も支えない'], correctIndex: 2, sectionId: 'society' },
@@ -45,11 +46,26 @@ export const phase49LegacyCareWorkerQuestions = [
   { id: 582, question: '【事例 5】 Eさん（88歳、女性、要介護5）は、特別養護老人ホームに入所中。インフルエンザが施設内で流行しており、Eさんも高熱と咳が出始めた。\nEさんの介助にあたるとき、介護職が徹底すべき「標準予防策（スタンダード・プリコーション）」はどれか。', choices: ['手洗いと手指消毒、使い捨て手袋・マスクの着用', '部屋の鍵をかける', 'Eさんと話さないようにする', '窓をすべて閉め切る', '薬を多めに飲ませる'], correctIndex: 0, sectionId: 'medical-care', explanation: '「すべての体液・排出物は感染の恐れがある」として扱う、感染防止の鉄則です。' },
 ] as const
 
+export const phase52LegacyCareWorkerQuestions = [
+  {"id":103,"question":"事故が発生した際、介護職が最初に行うべき対応はどれか。","choices":["事故報告書を書く","自分の責任ではないと言い訳する","利用者の安全確保とバイタルサインの確認","家族に謝罪の電話をかける","警察に通報する"],"correctIndex":2,"sectionId":"care-basic","explanation":"何よりもまず目の前の利用者の命と安全を守る。報告はその次です！"},
+  {"id":117,"question":"認知症の利用者が夜中に何度も起きる際、適切な対応はどれか。","choices":["部屋に鍵をかけて出られないようにする","眠くなるまで一緒に歩くなど、理由を確認する","怒鳴って寝かせる","体をベッドに縛る","睡眠薬を勝手に飲ませる"],"correctIndex":1,"sectionId":"care-basic","explanation":"拘束（鍵をかける等）は最終手段。まずは「なぜ起きるのか」に寄り添うのがプロです。"},
+  {"id":139,"question":"医療と介護の連携において、退院後に自宅で点滴などの医療処置が必要な場合の主な相談相手はどれか。","choices":["警察官","訪問看護師","歯科医師","民生委員","美容師"],"correctIndex":1,"sectionId":"care-basic","explanation":"在宅医療の要（かなめ）は訪問看護。点滴や褥瘡ケアのプロフェッショナルです。"},
+  {"id":145,"question":"誤嚥（ごえん）のリスクが高い利用者に対し、食事の前に準備運動として行うのが適切なのはどれか。","choices":["100メートル走","腕立て伏せ","嚥下体操（パタカラ体操など）","暗算の練習","読書"],"correctIndex":2,"sectionId":"care-basic","explanation":"口周りの筋肉を動かすことで、飲み込みをスムーズにし、誤嚥を防ぐ準備をするんです。"},
+  {"id":230,"question":"入浴後、利用者が「フラフラする」と言った。最初に行うべき対応はどれか。","choices":["廊下を歩かせる","すぐに服を着せて立たせる","水分補給を行い、横になって安静にしてもらう","放置する","熱いお茶を飲ませる"],"correctIndex":2,"sectionId":"life-support","explanation":"湯冷めを防ぎつつ、バイタルチェック（血圧など）をして様子を見るのがプロです。"},
+  {"id":248,"question":"利用者が転倒したのを発見した際、最初に行うべきことはどれか。","choices":["すぐに抱き起こす","意識や呼吸、痛み、出血の有無を確認し、動かさずに様子を見る","転んだことを厳しく注意する","部屋に連れて帰る","家族に電話する"],"correctIndex":1,"sectionId":"life-support","explanation":"骨折している可能性もある。二次被害を防ぐため、まずは「評価（アセスメント）」です！"},
+  {"id":293,"question":"感染症の流行時、介護職がガウンや手袋を脱ぐ順番として正しいのはどれか。","choices":["手袋 → ガウンの順（汚染が強いものから）","ガウン → 手袋の順","マスク → 手袋の順","順番は関係ない","全部一気に引きちぎる"],"correctIndex":0,"sectionId":"life-support","explanation":"**「手袋 → ガウン → マスク」**の順が基本。汚染された表面に触れないよう、内側から丸めて捨てるのです。"},
+  {"id":294,"question":"感染症（疥癬：かいせん等）がある利用者のリネン類（シーツ等）の扱いとして適切なのは。","choices":["他の利用者の物と一緒に洗う","ビニール袋に密閉して運び、指定の方法で消毒・洗濯する","外に放り投げる","洗わずに使い続ける","捨てる"],"correctIndex":1,"sectionId":"life-support","explanation":"感染源を広げない「隔離と密閉」が鉄則。特に疥癬は接触感染力が強いから注意です！"},
+  {"id":304,"question":"重度の認知症がある方の調理支援で、火災を予防するための環境整備はどれか。","choices":["ライターをたくさん置く","ガスコンロをIHクッキングヒーターや電磁調理器に変更する","換気扇を止める","新聞紙をコンロの周りに敷く","料理を禁止して叱る"],"correctIndex":1,"sectionId":"life-support","explanation":"認知症の特性を理解し、物理的に火が出ない環境を作るのがプロの配慮です。"},
+  {"id":458,"question":"認知症の方への不適切な対応（スピーチロック）に該当するのはどれか。","choices":["「ちょっと待ってください」と行動を制限する","笑顔で挨拶する","話を最後まで聴く","目線を合わせて話す","感謝の言葉を伝える"],"correctIndex":0,"sectionId":"dementia","explanation":"言葉による拘束も不適切なケアです。相手の自由を奪っていないか常に自問自答が必要です。"},
+  {"id":561,"question":"口腔内・鼻腔内の吸引において、1回の吸引時間の目安として適切なものはどれか。","choices":["5秒以内","15秒以内","30秒以内","1分間","限界まで"],"correctIndex":1,"sectionId":"medical-care","explanation":"長時間の吸引は低酸素状態を招くため、1回15秒以内（挿入から抜去まで）が鉄則です。"},
+  {"id":594,"question":"【事例 9】 Jさん（80歳、女性、認知症）は、長男と二人暮らし。訪問介護員が訪問した際、Jさんの腕に不自然なアザを見つけ、長男がイライラして怒鳴っている場面に遭遇した。\n虐待の疑いを発見した際、介護福祉士が最初にとるべき行動として適切なものは。","choices":["長男を厳しく叱りつける","気づかないふりをする","速やかに市町村の窓口等へ報告・通報する","SNSに写真をアップする","Jさんに我慢するよう言う"],"correctIndex":2,"sectionId":"medical-care","explanation":"「虐待の防止」はプロの法的義務。本人の安全確保が最優先です。"},
+] as const
+
 const canonical = new Map(careWorkerExamQuiz.questions.map((question) => [Number(question.id), question]))
 type StorageLike = Pick<Storage, 'getItem' | 'setItem'>
 const same = (left: unknown, right: unknown) => JSON.stringify(left) === JSON.stringify(right)
 
-type LegacyQuestion = (typeof legacy)[number] | (typeof phase45LegacyCareWorkerQuestions)[number] | (typeof phase49LegacyCareWorkerQuestions)[number]
+type LegacyQuestion = (typeof legacy)[number] | (typeof phase45LegacyCareWorkerQuestions)[number] | (typeof phase49LegacyCareWorkerQuestions)[number] | (typeof phase52LegacyCareWorkerQuestions)[number]
 
 function isLegacyQuestion(value: unknown, item: LegacyQuestion): value is Question {
   if (!value || typeof value !== 'object') return false
@@ -77,7 +93,7 @@ function migrateArray(values: unknown[], candidates: readonly LegacyQuestion[]):
   })
 }
 
-export function migrateCareWorkerExamStoredValue(value: unknown, candidates: readonly LegacyQuestion[] = [...legacy, ...phase45LegacyCareWorkerQuestions, ...phase49LegacyCareWorkerQuestions]): unknown {
+export function migrateCareWorkerExamStoredValue(value: unknown, candidates: readonly LegacyQuestion[] = [...legacy, ...phase45LegacyCareWorkerQuestions, ...phase49LegacyCareWorkerQuestions, ...phase52LegacyCareWorkerQuestions]): unknown {
   if (Array.isArray(value)) return migrateArray(value, candidates)
   if (!value || typeof value !== 'object') return value
   const record = { ...(value as Record<string, unknown>) }
@@ -90,7 +106,7 @@ export function migrateCareWorkerExamQuestionStorage(storage?: StorageLike): voi
     if (typeof window === 'undefined') return
     storage = window.localStorage
   }
-  const migrations = [[VERSION_KEY, legacy], [VERSION_KEY_V2, phase45LegacyCareWorkerQuestions], [VERSION_KEY_V3, phase49LegacyCareWorkerQuestions]] as const
+  const migrations = [[VERSION_KEY, legacy], [VERSION_KEY_V2, phase45LegacyCareWorkerQuestions], [VERSION_KEY_V3, phase49LegacyCareWorkerQuestions], [VERSION_KEY_V4, phase52LegacyCareWorkerQuestions]] as const
   for (const [versionKey, candidates] of migrations) {
     try {
       if (storage.getItem(versionKey) === '1') continue
