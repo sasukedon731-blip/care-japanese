@@ -5,6 +5,7 @@ const VERSION_KEY = 'care-worker-exam-question-content-migration-v1'
 const VERSION_KEY_V2 = 'care-worker-exam-question-content-migration-v2'
 const VERSION_KEY_V3 = 'care-worker-exam-question-content-migration-v3'
 const VERSION_KEY_V4 = 'care-worker-exam-question-content-migration-v4'
+const VERSION_KEY_V5 = 'care-worker-exam-question-content-migration-v5'
 const STORAGE_KEYS = ['wrong-care-worker-exam', 'normal-session-care-worker-exam', 'exam-session-care-worker-exam'] as const
 const legacy = [
   { id: 85, question: '日本の将来推計において、2040年頃に高齢者1人を現役世代何人で支えることになると予測されているか。', choices: ['約10人', '約5人', '約', '5人', '約0.5人', '誰も支えない'], correctIndex: 2, sectionId: 'society' },
@@ -61,11 +62,23 @@ export const phase52LegacyCareWorkerQuestions = [
   {"id":594,"question":"【事例 9】 Jさん（80歳、女性、認知症）は、長男と二人暮らし。訪問介護員が訪問した際、Jさんの腕に不自然なアザを見つけ、長男がイライラして怒鳴っている場面に遭遇した。\n虐待の疑いを発見した際、介護福祉士が最初にとるべき行動として適切なものは。","choices":["長男を厳しく叱りつける","気づかないふりをする","速やかに市町村の窓口等へ報告・通報する","SNSに写真をアップする","Jさんに我慢するよう言う"],"correctIndex":2,"sectionId":"medical-care","explanation":"「虐待の防止」はプロの法的義務。本人の安全確保が最優先です。"},
 ] as const
 
+export const phase55LegacyCareWorkerQuestions = [
+  { id: 111, question: '終末期にある利用者の「口の中が乾く」という訴えに対し、適切なケアはどれか。', choices: ['氷を含ませたり、湿らせたガーゼで拭く', '水を無理やり飲ませる', '放置して様子を見る', '歯ブラシで強くこする', '部屋の温度を極端に下げる'], correctIndex: 0, sectionId: 'care-basic', explanation: '終末期は嚥下機能が落ちているため、誤嚥を防ぎつつ保湿する「口腔ケア」が重要です。' },
+  { id: 241, question: '死が間近に迫った利用者が「喉が渇いた」と訴えたが、誤嚥のリスクが非常に高い。適切な対応はどれか。', choices: ['水をコップ一杯飲ませる', '氷片を口に含ませたり、湿らせた綿棒で唇を潤す', '「危ないからダメです」と拒否する', '放置する', '部屋の湿度を100%にする'], correctIndex: 1, sectionId: 'life-support', explanation: '終末期は「治す」より「苦痛の緩和」が優先。少量の水分で潤いを与えるのが優しさです。' },
+  { id: 254, question: '嚥下機能が低下している利用者に適した、食材の切り方はどれか。', choices: ['大きな塊のまま', '繊維を断ち切るように小さく刻む（隠し包丁を入れる）', '非常に長く切る', '固いまま出す', '皮を剥かない'], correctIndex: 1, sectionId: 'life-support', explanation: '噛み切りやすく、口の中でバラバラにならない工夫が誤嚥防止になるんです。' },
+  { id: 460, question: '認知症ケアの究極の目標はどれか。', choices: ['全員を完治させること', '認知症があっても、その人の尊厳が守られ、最期までその人らしく生きること', '施設から一人も出さないこと', '介護記録を完璧に書くこと', '職員が一番楽をすること'], correctIndex: 1, sectionId: 'dementia', explanation: '' },
+  { id: 510, question: '障害者支援における介護福祉士の最も重要な役割は。', choices: ['障害を完治させること', '本人の自己決定を尊重し、自立を共に支えること', '施設のルールを厳守させること', '家族の言いなりになること', '障害を無視すること'], correctIndex: 1, sectionId: 'disability', explanation: '' },
+  { id: 550, question: '心身のしくみを学ぶ最大の目的はどれか。', choices: ['医者の代わりをすること', '介護の根拠（エビデンス）を持ち、安全で質の高いケアを実践するため', '利用者の欠点を見つけるため', '難しい言葉を覚えるため', '自分の健康管理のため'], correctIndex: 1, sectionId: 'body-mind', explanation: '' },
+  { id: 569, question: '使用した吸引カテーテルの洗浄・保管方法として、適切なものはどれか。', choices: ['洗わずにそのまま放置する', '流水でよく洗い、清潔な容器で乾燥・保管（または消毒液へ）', '自分のポケットに入れる', '共有のタオルで拭く', '床に置く'], correctIndex: 1, sectionId: 'medical-care', explanation: '細菌の繁殖を防ぐため、各施設のマニュアルに沿った厳格な衛生管理が求められます。' },
+  { id: 570, question: '利用者の状態が急変（意識消失や呼吸停止）した際、介護福祉士に求められる役割は。', choices: ['一人で解決しようとする', '救急蘇生法（AED等）を実施し、周囲と連携して救急要請する', '逃げ出す', '泣き叫ぶ', '他の利用者の食事介助を続ける'], correctIndex: 1, sectionId: 'medical-care', explanation: '' },
+  { id: 574, question: '【事例 2】 Bさん（75歳、男性、要介護4）は、脳出血の後遺症で左片麻痺がある。食事中にむせることが増え、最近は元気がなく、部屋に閉じこもりがち（アパシー状態）である。\n左片麻痺があるBさんの食事介助において、最も適切な配慮はどれか。', choices: ['左側から食べ物を運ぶ', '麻痺のない右側の口角にスプーンを運ぶ', '仰向けの状態で食べさせる', '早く食べるよう急かす', '汁物を先に全部飲ませる'], correctIndex: 1, sectionId: 'medical-care', explanation: '感覚のある健側（右側）で味や食感を確認し、咀嚼・嚥下を促すのが基本です。' },
+] as const
+
 const canonical = new Map(careWorkerExamQuiz.questions.map((question) => [Number(question.id), question]))
 type StorageLike = Pick<Storage, 'getItem' | 'setItem'>
 const same = (left: unknown, right: unknown) => JSON.stringify(left) === JSON.stringify(right)
 
-type LegacyQuestion = (typeof legacy)[number] | (typeof phase45LegacyCareWorkerQuestions)[number] | (typeof phase49LegacyCareWorkerQuestions)[number] | (typeof phase52LegacyCareWorkerQuestions)[number]
+type LegacyQuestion = (typeof legacy)[number] | (typeof phase45LegacyCareWorkerQuestions)[number] | (typeof phase49LegacyCareWorkerQuestions)[number] | (typeof phase52LegacyCareWorkerQuestions)[number] | (typeof phase55LegacyCareWorkerQuestions)[number]
 
 function isLegacyQuestion(value: unknown, item: LegacyQuestion): value is Question {
   if (!value || typeof value !== 'object') return false
@@ -93,7 +106,7 @@ function migrateArray(values: unknown[], candidates: readonly LegacyQuestion[]):
   })
 }
 
-export function migrateCareWorkerExamStoredValue(value: unknown, candidates: readonly LegacyQuestion[] = [...legacy, ...phase45LegacyCareWorkerQuestions, ...phase49LegacyCareWorkerQuestions, ...phase52LegacyCareWorkerQuestions]): unknown {
+export function migrateCareWorkerExamStoredValue(value: unknown, candidates: readonly LegacyQuestion[] = [...legacy, ...phase45LegacyCareWorkerQuestions, ...phase49LegacyCareWorkerQuestions, ...phase52LegacyCareWorkerQuestions, ...phase55LegacyCareWorkerQuestions]): unknown {
   if (Array.isArray(value)) return migrateArray(value, candidates)
   if (!value || typeof value !== 'object') return value
   const record = { ...(value as Record<string, unknown>) }
@@ -106,7 +119,7 @@ export function migrateCareWorkerExamQuestionStorage(storage?: StorageLike): voi
     if (typeof window === 'undefined') return
     storage = window.localStorage
   }
-  const migrations = [[VERSION_KEY, legacy], [VERSION_KEY_V2, phase45LegacyCareWorkerQuestions], [VERSION_KEY_V3, phase49LegacyCareWorkerQuestions], [VERSION_KEY_V4, phase52LegacyCareWorkerQuestions]] as const
+  const migrations = [[VERSION_KEY, legacy], [VERSION_KEY_V2, phase45LegacyCareWorkerQuestions], [VERSION_KEY_V3, phase49LegacyCareWorkerQuestions], [VERSION_KEY_V4, phase52LegacyCareWorkerQuestions], [VERSION_KEY_V5, phase55LegacyCareWorkerQuestions]] as const
   for (const [versionKey, candidates] of migrations) {
     try {
       if (storage.getItem(versionKey) === '1') continue
