@@ -10,6 +10,7 @@ import QuestionImage from '@/app/components/QuestionImage'
 import type { Quiz, QuizType, Question } from '@/app/data/types'
 import { migrateN3QuestionStorage } from '@/app/lib/n3QuestionMigration'
 import { buildN2QuizContentSignature, migrateN2QuestionStorage } from '@/app/lib/n2QuestionMigration'
+import { migrateN4QuestionStorage } from '@/app/lib/n4QuestionMigration'
 import { buildCareWorkerExamContentSignature, migrateCareWorkerExamQuestionStorage } from '@/app/lib/careWorkerExamQuestionMigration'
 import { formatCorrectAnswerLabels, getCorrectIndexes, isCorrectSelection, isMultiAnswerQuestion, isSelectionComplete, requiredAnswerCount, shuffleQuestionChoices as shuffleQuestionChoicesWithAnswers, stripLeadingAnswerLabel } from '@/app/lib/questionAnswer'
 
@@ -223,7 +224,7 @@ export default function NormalClient({ quiz }: Props) {
       ? buildCareWorkerExamContentSignature(quizType, quiz.questions)
       : undefined
 
-  useEffect(() => { migrateN3QuestionStorage(); migrateN2QuestionStorage(); migrateCareWorkerExamQuestionStorage() }, [quizType])
+  useEffect(() => { migrateN3QuestionStorage(); migrateN2QuestionStorage(); migrateCareWorkerExamQuestionStorage(); migrateN4QuestionStorage(localStorage, quizType) }, [quizType])
 
   const goModeSelect = () => {
     router.push(`/select-mode?type=${quizType}`)

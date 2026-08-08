@@ -10,6 +10,7 @@ import QuestionImage from '@/app/components/QuestionImage'
 import type { Quiz, QuizType, Question } from '@/app/data/types'
 import { buildQuizContentSignature, migrateN3QuestionStorage } from '@/app/lib/n3QuestionMigration'
 import { buildN2QuizContentSignature, migrateN2QuestionStorage } from '@/app/lib/n2QuestionMigration'
+import { migrateN4QuestionStorage } from '@/app/lib/n4QuestionMigration'
 import { buildCareWorkerExamContentSignature, migrateCareWorkerExamQuestionStorage } from '@/app/lib/careWorkerExamQuestionMigration'
 import { formatCorrectAnswerLabels, getCorrectIndexes, isCorrectSelection, isMultiAnswerQuestion, isSelectionComplete, requiredAnswerCount, shuffleQuestionChoices as shuffleQuestionChoicesWithAnswers, stripLeadingAnswerLabel } from '@/app/lib/questionAnswer'
 import { useAuth } from '@/app/lib/useAuth'
@@ -79,7 +80,7 @@ export default function ExamClient({ quiz }: Props) {
   const sessionKey = `${STORAGE_EXAM_SESSION_KEY}-${quizType}`
   const progressKey = `${STORAGE_EXAM_PROGRESS_KEY}-${quizType}`
 
-  useEffect(() => { migrateN3QuestionStorage(); migrateN2QuestionStorage(); migrateCareWorkerExamQuestionStorage() }, [quizType])
+  useEffect(() => { migrateN3QuestionStorage(); migrateN2QuestionStorage(); migrateCareWorkerExamQuestionStorage(); migrateN4QuestionStorage(localStorage, quizType) }, [quizType])
 
   const [questions, setQuestions] = useState<Question[]>([])
   const [index, setIndex] = useState(0)
